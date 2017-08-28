@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -78,46 +79,8 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 //            Log.v("SSE Message: ", message.lastEventId);
 //            Log.v("SSE Message: ", message.data);
 
+            showMessage(message);
 
-            try  {
-                JSONObject mainObject = new JSONObject(message.data);
-                JSONObject data = mainObject.getJSONObject("data");
-                String text = data.getString("text");
-
-                JSONObject sender = mainObject.getJSONObject("sender");
-                String name = sender.getString("name");
-
-                Calendar cal = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                try {
-                    cal.setTime(sdf.parse(data.getString("createdAt")));// all done
-                }catch (Exception e){
-
-                }
-                Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-                final User me = new User(0, name, myIcon);
-                final Message receivedMessage = new Message.Builder()
-                        .setUser(me)
-                        .setRightMessage(false)
-                        .setMessageText(text)
-                        .setCreatedAt(cal)
-                        .hideIcon(false)
-                        .build();
-                mChatView.receive(receivedMessage);
-
-//                // Return within 3 seconds
-//                int sendDelay = (new Random().nextInt(4) + 1) * 1000;
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mChatView.receive(receivedMessage);
-//                    }
-//                }, sendDelay);
-
-
-            }catch (Exception e){
-
-            }
 
         }
 
@@ -199,6 +162,47 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         }
     }
 
+    public void showMessage(MessageEvent message){
+        try  {
+            JSONObject mainObject = new JSONObject(message.data);
+            JSONObject data = mainObject.getJSONObject("data");
+            String text = data.getString("text");
+
+            JSONObject sender = mainObject.getJSONObject("sender");
+            String name = sender.getString("name");
+
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            try {
+                cal.setTime(sdf.parse(data.getString("createdAt")));// all done
+            }catch (Exception e){
+
+            }
+            Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
+            final User me = new User(0, name, myIcon);
+            final Message receivedMessage = new Message.Builder()
+                    .setUser(me)
+                    .setRightMessage(false)
+                    .setMessageText(text)
+                    .setCreatedAt(cal)
+                    .hideIcon(false)
+                    .build();
+            //mChatView.receive(receivedMessage);
+
+
+
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    mChatView.receive(receivedMessage);
+                }
+            });
+
+        }catch (Exception e){
+
+
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -244,6 +248,8 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         mChatView.setInputTextHint("new message...");
         mChatView.setMessageMarginTop(5);
         mChatView.setMessageMarginBottom(5);
+        mChatView.setAutoScroll(true);
+
 
         //Click Send Button
         mChatView.setOnClickSendButtonListener(new View.OnClickListener() {
@@ -266,11 +272,11 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                 //Reset edit text
                 mChatView.setInputText("");
 //
-//                //Receive message
+                //Receive message
 //                final Message receivedMessage = new Message.Builder()
 //                        .setUser(you)
 //                        .setRightMessage(false)
-//                        .setMessageText(ChatBot.talk(me.getName(), message.getMessageText()))
+//                        .setMessageText(ChatBot.talk(me.getName(), "xxx"))
 //                        .build();
 //
 //                // This is a demo bot
