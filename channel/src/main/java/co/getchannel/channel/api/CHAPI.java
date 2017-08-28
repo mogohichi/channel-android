@@ -10,6 +10,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 
 import co.getchannel.channel.CHConfiguration;
+import co.getchannel.channel.models.CHClient;
 import co.getchannel.channel.ssl.NoSSLv3SocketFactory;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
@@ -84,10 +85,28 @@ public class CHAPI {
                                       public Response intercept(Interceptor.Chain chain) throws IOException {
                                           String appKey =  CHConfiguration.getApplicationId();
                                           Request original = chain.request();
-                                          Request request = original.newBuilder()
-                                                  .header("X-Channel-Application-Key", appKey)
-                                                  .method(original.method(), original.body())
-                                                  .build();
+                                          Request request =  original.newBuilder()
+                                                    .header("X-Channel-Client-ID", CHClient.currentClient().getClientID()==null?"":CHClient.currentClient().getClientID())
+                                                    .header("X-Channel-Application-Key", appKey)
+                                                    .header("content-type","application/json")
+                                                    .method(original.method(), original.body())
+                                                    .build();
+
+//                                          Request request =
+//
+//                                                  CHClient.currentClient().getClientID().length() > 0 ?
+//                                                          original.newBuilder()
+//                                                              .header("X-Channel-Client-ID", CHClient.currentClient().getClientID())
+//                                                              .header("X-Channel-Application-Key", appKey)
+//                                                              .header("content-type","application/json")
+//                                                              .method(original.method(), original.body())
+//                                                              .build():
+//                                                          original.newBuilder()
+//                                                                  .header("X-Channel-Application-Key", appKey)
+//                                                                  .header("content-type","application/json")
+//                                                                  .method(original.method(), original.body())
+//                                                                  .build();
+
 
                                           return chain.proceed(request);
                                       }

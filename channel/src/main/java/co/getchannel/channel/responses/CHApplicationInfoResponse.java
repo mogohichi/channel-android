@@ -4,8 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-import co.getchannel.channel.models.Agent;
-import co.getchannel.channel.models.Application;
+import co.getchannel.channel.models.internal.Agent;
+import co.getchannel.channel.models.internal.Application;
 
 /**
  * Created by Admin on 8/16/2017.
@@ -23,30 +23,31 @@ public class CHApplicationInfoResponse {
         public void setData(CHApplicationInfoData data) {
             this.data = data;
         }
+        public class CHApplicationInfoData{
+            @SerializedName("agents")
+            private List<Agent> agents;
+            @SerializedName("application")
+            private Application application;
+
+            public List<Agent> getAgents() {
+                return agents;
+            }
+
+            public void setAgents(List<Agent> agents) {
+                this.agents = agents;
+            }
+
+            public Application getApplication() {
+                return application;
+            }
+
+            public void setApplication(Application application) {
+                this.application = application;
+            }
+        }
     }
 
-    public class CHApplicationInfoData{
-        @SerializedName("agents")
-        private List<Agent> agents;
-        @SerializedName("application")
-        private Application application;
 
-        public List<Agent> getAgents() {
-            return agents;
-        }
-
-        public void setAgents(List<Agent> agents) {
-            this.agents = agents;
-        }
-
-        public Application getApplication() {
-            return application;
-        }
-
-        public void setApplication(Application application) {
-            this.application = application;
-        }
-    }
 
     @SerializedName("code")
     private int code;

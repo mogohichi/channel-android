@@ -5,22 +5,17 @@ package co.getchannel.channel;
  */
 
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 
-
-import co.getchannel.channel.api.CHAPI;
-import co.getchannel.channel.api.CHAPIInterface;
-import co.getchannel.channel.helpers.CHConstants;
-import co.getchannel.channel.models.Agent;
-import co.getchannel.channel.models.Application;
-import co.getchannel.channel.responses.CHApplicationInfoResponse;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import co.getchannel.channel.activities.ChatActivity;
+import co.getchannel.channel.models.CHClient;
 
 import static co.getchannel.channel.helpers.CHConstants.kChannel_tag;
 
@@ -42,39 +37,43 @@ public class Channel  {
     public static Activity getActivity() {
         return activity;
     }
-    public final static void setupActivityWithApplicationId(final WeakReference<Activity> mReference,String applicationId){
+
+    public final static void setupActivityWithApplicationID(final WeakReference<Activity> mReference,String applicationID){
       Activity act = mReference.get();
         if (act != null) {
             activity = act;
-            CHConfiguration.setApplicationId(applicationId);
+            setupWithApplicationID(applicationID,null,null);
        }
         Log.d(kChannel_tag,CHConfiguration.getApplicationId());
     }
 
-
-
-    public static void applicationInfo(){
-        CHAPIInterface apiService =
-                CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
-        Call<CHApplicationInfoResponse> call = apiService.getApplicationInfo();
-        call.enqueue(new Callback<CHApplicationInfoResponse>() {
-            @Override
-            public void onResponse(Call<CHApplicationInfoResponse> call, Response<CHApplicationInfoResponse> response) {
-                if (response.code() == 200){
-                    List<Agent> agents = response.body().getResult().getData().getAgents();
-                    Application app = response.body().getResult().getData().getApplication();
-                    Log.d(CHConstants.kChannel_tag,"Number of agent received: " + agents.size());
-                }else{
-                    Log.d(CHConstants.kChannel_tag, response.message());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<CHApplicationInfoResponse>call, Throwable t) {
-                // Log error here since request failed
-                String x = t.toString();
-                Log.d(CHConstants.kChannel_tag,x);
-            }
-        });
+    public final static void setupActivityWithApplicationID(final WeakReference<Activity> mReference,String applicationID,String userID,HashMap<String,String>userData){
+        Activity act = mReference.get();
+        if (act != null) {
+            activity = act;
+           setupWithApplicationID(applicationID,userID,userData);
+        }
+        Log.d(kChannel_tag,CHConfiguration.getApplicationId());
     }
+    public final static void setupWithApplicationID(String applicationId,String userID,HashMap<String,String>userData){
+        CHConfiguration.setApplicationId(applicationId);
+        if (userID != null){
+            CHClient.currentClient().setUserID(userID);
+
+        }
+        if(userData != null){
+            CHClient.currentClient().setUserData(userData);
+        }
+
+        CHClient.connectClientWithUserID(userID,userData);
+    }
+
+
+    public final static void chatViewWithUserID(String userID, HashMap<String,String> userData){
+        Intent myIntent = new Intent(activity, ChatActivity.class);
+        myIntent.putExtra("userData",userData);
+        myIntent.putExtra("userID",userID);
+        activity.startActivity(myIntent);
+    }
+
 }
