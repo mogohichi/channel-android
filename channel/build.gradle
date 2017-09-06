@@ -41,4 +41,10 @@ dependencies {
 
     compile 'com.github.bassaer:chatmessageview:1.3.3'
     compile 'com.tylerjroach:eventsource:1.2.11'
+
+//    compile 'com.mindorks:paracamera:0.2.2'
+//    compile 'com.github.Mariovc:ImagePicker:1.2.0'
+//    compile 'com.github.nguyenhoanglam:ImagePicker:1.1.3'
+    compile 'com.github.jkwiecien:EasyImage:1.3.1'
+
 }

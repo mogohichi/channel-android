@@ -1,5 +1,6 @@
 package co.getchannel.channel.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -9,6 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 
@@ -16,15 +18,24 @@ import com.github.bassaer.chatmessageview.models.Message;
 import com.github.bassaer.chatmessageview.models.User;
 import com.github.bassaer.chatmessageview.utils.ChatBot;
 import com.github.bassaer.chatmessageview.views.ChatView;
+//import com.mindorks.paracamera.Camera;
 import com.tylerjroach.eventsource.EventSource;
 import com.tylerjroach.eventsource.EventSourceHandler;
 import com.tylerjroach.eventsource.MessageEvent;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -32,16 +43,23 @@ import co.getchannel.channel.CHConfiguration;
 import co.getchannel.channel.callback.SendMessageComplete;
 import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.R;
+import co.getchannel.channel.callback.UploadMessageImageComplete;
 import co.getchannel.channel.helpers.CHConstants;
 import co.getchannel.channel.models.CHClient;
+import co.getchannel.channel.responses.CHMessageImageResponse;
 import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 
-public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete {
+import pl.aprilapps.easyphotopicker.DefaultCallback;
+import pl.aprilapps.easyphotopicker.EasyImage;
+
+public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,UploadMessageImageComplete {
     private RecyclerView recyclerView;
     private ChatView mChatView;
     private SSEHandler sseHandler = new SSEHandler();
     private ChatActivity activity;
+    // Create global camera reference in an activity or fragment
+//    Camera camera;
 
     private EventSource eventSource;
     private void startEventSource() {
@@ -79,9 +97,12 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 //            Log.v("SSE Message: ", message.lastEventId);
 //            Log.v("SSE Message: ", message.data);
 
-            showMessage(message);
+            try{
+                showMessage(new JSONObject(message.data));
+            }
+            catch (Exception e){
 
-
+            }
         }
 
         @Override
@@ -102,105 +123,284 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         }
     }
 
+    public static Bitmap getBitmapFromURL(String src) {
+        try {
+//            src = src.replace("localhost", "10.0.2.2");
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void complete(CHMessageImageResponse data){
+        Log.d(CHConstants.kChannel_tag,data.getResult().getData().getUrl());
+        co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
+        message.setImageData(data.getResult().getData().getUrl());
+        CHClient.currentClient().sendImage(activity,message);
+    }
     public void complete(CHMessageResponse data){
 
     }
 
     public void complete(CHThreadResponse data){
 //        recyclerView.setAdapter(new ChatsAdapter(data.getResul   t().getData().getMessages(), R.layout.list_item_movie, getApplicationContext()));
+        try{
+            for (CHMessageResponse msg : data.getResult().getData().getMessages()) {
+                showMessage(msg);
+            }
+        }catch (Exception e){
 
-        for (CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage msg : data.getResult().getData().getMessages()) {
-            //User id
-            int myId = 0;
-            //User icon
-            Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
+        }
 
-//            try {
-//                String img = msg.getSender().getProfilePictureURL();
-//                URL url = new URL(msg.getSender().getProfilePictureURL());
-//                myIcon = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-//            } catch(Exception e) {
-//
-//            }
-            //User name
-            String myName = msg.getSender().getName();
-            //new message
-            final User me = new User(myId, myName, myIcon);
+    }
 
-            Calendar cal = Calendar.getInstance();
+
+    public void showMessage(CHMessageResponse mainObject){
+        try  {
+
+
+            final String text = mainObject.getData().getText();
+
+
+            String type ="";
+            if(mainObject.getData().getCard() != null){
+                 type = mainObject.getData().getCard().getType();
+
+            }
+
+            final String name = mainObject.getSender().getName();
+            final String imageUrl = mainObject.getSender().getProfilePictureURL();
+
+            final Boolean isFromBusiness = mainObject.getFromBusiness();
+
+            final Calendar cal = Calendar.getInstance();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             try {
-                cal.setTime(sdf.parse(msg.getCreatedAt()));// all done
+                cal.setTime(sdf.parse(mainObject.getCreatedAt()));// all done
+            }catch (Exception e){
+
+            }
+
+            if (type.equals("image")){
+                if(mainObject.getData().getCard().getPayload() != null){
+                    final String url = mainObject.getData().getCard().getPayload().getUrl();
+                    Thread thread = new Thread(new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                Bitmap profilePic  = getBitmapFromURL(imageUrl);
+                                Message receivedMessage = new Message.Builder()
+                                        .setUser(new User(0, name, profilePic))
+                                        .setRightMessage(!isFromBusiness)
+                                        .setPicture(getBitmapFromURL(url))
+                                        .setType(Message.Type.PICTURE)
+                                        .setCreatedAt(cal)
+                                        .hideIcon(!isFromBusiness)
+                                        .build();
+                                mChatView.receive(receivedMessage);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+                    thread.start();
+                }
+            }else{
+
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            Bitmap profilePic  = getBitmapFromURL(imageUrl);
+                            Message receivedMessage = new Message.Builder()
+                                    .setUser(new User(0, name, profilePic))
+                                    .setRightMessage(!isFromBusiness)
+                                    .setMessageText(text)
+                                    .setCreatedAt(cal)
+                                    .hideIcon(!isFromBusiness)
+                                    .build();
+                            mChatView.receive(receivedMessage);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+                thread.start();
+
+            }
+
+        }catch (Exception e){
+
+        }
+    }
+    public void showMessage(JSONObject mainObject){
+        try  {
+
+            JSONObject data = mainObject.getJSONObject("data");
+            final String text = data.getString("text");
+
+            String type = "";
+            try{
+                JSONObject messageData = data.getJSONObject("data");
+                if (messageData != null){
+                    type = messageData.getString("type");
+                }
             }catch (Exception e){
 
             }
 
 
-            if (msg.getFromBusiness()){
-                Message message = new Message.Builder()
-                        .setUser(me)
-                        .setRightMessage(false)
-                        .setMessageText(msg.getData().getText())
-                        .setCreatedAt(cal)
-                        .hideIcon(false)
-                        .build();
-
-                //Set to chat view
-                mChatView.receive(message);
-            }else{
-                Message message = new Message.Builder()
-                        .setUser(me)
-                        .setRightMessage(true)
-                        .setMessageText(msg.getData().getText())
-                        .setCreatedAt(cal)
-                        .hideIcon(true)
-                        .build();
-                //Set to chat view
-                mChatView.send(message);
-            }
-
-        }
-    }
-
-    public void showMessage(MessageEvent message){
-        try  {
-            JSONObject mainObject = new JSONObject(message.data);
-            JSONObject data = mainObject.getJSONObject("data");
-            String text = data.getString("text");
-
             JSONObject sender = mainObject.getJSONObject("sender");
-            String name = sender.getString("name");
+            final String name = sender.getString("name");
+            final String imageUrl = sender.getString("profilePictureURL");
+            final Boolean isFromBusiness = mainObject.getBoolean("isFromBusiness");
 
-            Calendar cal = Calendar.getInstance();
+            final Calendar cal = Calendar.getInstance();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
             try {
                 cal.setTime(sdf.parse(data.getString("createdAt")));// all done
             }catch (Exception e){
 
             }
-            Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-            final User me = new User(0, name, myIcon);
-            final Message receivedMessage = new Message.Builder()
-                    .setUser(me)
-                    .setRightMessage(false)
-                    .setMessageText(text)
-                    .setCreatedAt(cal)
-                    .hideIcon(false)
-                    .build();
-            //mChatView.receive(receivedMessage);
+
+            if (type.equals( "image")){
+                JSONObject payload = data.getJSONObject("payload");
+                final String url = payload.getString("url");
 
 
 
-            activity.runOnUiThread(new Runnable() {
-                public void run() {
-                    mChatView.receive(receivedMessage);
-                }
-            });
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            Message receivedMessage = new Message.Builder()
+                                    .setUser(new User(0, name, getBitmapFromURL(imageUrl)))
+                                    .setRightMessage(!isFromBusiness)
+                                    .setType(Message.Type.PICTURE)
+                                    .setPicture(getBitmapFromURL(url))
+                                    .setCreatedAt(cal)
+                                    .hideIcon(!isFromBusiness)
+                                    .build();
+                            mChatView.receive(receivedMessage);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                thread.start();
+            }else{
+
+                Thread thread = new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            Message receivedMessage = new Message.Builder()
+                                    .setUser(new User(0, name, getBitmapFromURL(imageUrl)))
+                                    .setRightMessage(!isFromBusiness)
+                                    .setMessageText(text)
+                                    .setCreatedAt(cal)
+                                    .hideIcon(!isFromBusiness)
+                                    .build();
+                            mChatView.receive(receivedMessage);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                thread.start();
+
+            }
 
         }catch (Exception e){
 
-
         }
+    }
+
+    public String toBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
+    // Get the bitmap and image path onActivityResult of an activity or fragment
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        EasyImage.handleActivityResult(requestCode, resultCode, data, this, new DefaultCallback() {
+            @Override
+            public void onImagePickerError(Exception e, EasyImage.ImageSource source, int type) {
+                //Some error handling
+            }
+
+            @Override
+            public void onImagePicked(File imageFile, EasyImage.ImageSource source, int type){
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
+                if(bitmap != null) {
+//                picFrame.setImageBitmap(bitmap);
+//                co.getchannel.channel.models.internal.Message m = new co.getchannel.channel.models.internal.Message();
+//                m.setText(mChatView.getInputText());
+//                CHClient.currentClient().sendMessage(activity,m);
+                Bitmap myIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
+                final User me = new User(0, "Tui", myIcon);
+                //new message
+                Message message = new Message.Builder()
+                        .setUser(me)
+                        .setRightMessage(true)
+                        .setPicture(bitmap)
+                        .hideIcon(true)
+                        .setType(Message.Type.PICTURE)
+                        .build();
+                //Set to chat view
+                mChatView.send(message);
+                //Reset edit text
+                mChatView.setInputText("");
+                    CHClient.currentClient().uploadMessageImage(activity,toBase64(bitmap));
+
+            }
+
+            }
+
+
+
+        });
+//        if(requestCode == Camera.REQUEST_TAKE_PHOTO){
+//            Bitmap bitmap = camera.getCameraBitmap();
+//            if(bitmap != null) {
+////                picFrame.setImageBitmap(bitmap);
+////                co.getchannel.channel.models.internal.Message m = new co.getchannel.channel.models.internal.Message();
+////                m.setText(mChatView.getInputText());
+////                CHClient.currentClient().sendMessage(activity,m);
+//                Bitmap myIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
+//                final User me = new User(0, "Tui", myIcon);
+//                //new message
+//                Message message = new Message.Builder()
+//                        .setUser(me)
+//                        .setRightMessage(true)
+//                        .setPicture(bitmap)
+//                        .hideIcon(true)
+//                        .setType(Message.Type.PICTURE)
+//                        .build();
+//                //Set to chat view
+//                mChatView.send(message);
+//                //Reset edit text
+//                mChatView.setInputText("");
+//
+//            }else{
+////                Toast.makeText(this.getApplicationContext(),"Picture not taken!",Toast.LENGTH_SHORT).show();
+//            }
+//        }
     }
 
     @Override
@@ -209,14 +409,24 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         setContentView(R.layout.activity_chat);
         activity = this;
 
-//        recyclerView = (RecyclerView) findViewById(R.id.movies_recycler_view);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+// Build the camera
 
-//        Intent intent = getIntent();
-//        HashMap<String, String> userData = (HashMap<String, String>)intent.getSerializableExtra("userData");
-//        String userID = (String)intent.getSerializableExtra("userID");
-//        CHClient.updateClientData(userID,userData);
-       CHClient.activeThread(this);
+//        camera = new Camera.Builder()
+//                .resetToCorrectOrientation(true)// it will rotate the camera bitmap to the correct orientation from meta data
+//                .setTakePhotoRequestCode(1)
+//                .setDirectory("pics")
+//                .setName("channel_" + System.currentTimeMillis())
+//                .setImageFormat(Camera.IMAGE_JPEG)
+//                .setCompression(75)
+//                .setImageHeight(1000)// it will try to achieve this height as close as possible maintaining the aspect ratio;
+//                .build(this);
+
+
+        Intent intent = getIntent();
+        HashMap<String, String> userData = (HashMap<String, String>)intent.getSerializableExtra("userData");
+        String userID = (String)intent.getSerializableExtra("userID");
+        CHClient.updateClientData(userID,userData);
+        CHClient.activeThread(this);
 
         //User id
         int myId = 0;
@@ -250,7 +460,19 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         mChatView.setMessageMarginBottom(5);
         mChatView.setAutoScroll(true);
 
+        mChatView.setOnClickOptionButtonListener(new View.OnClickListener() {
+                                             @Override
+                                             public void onClick(View view) {
+                                                 try {
+                                                     mChatView.hideKeyboard();
+//                                                     EasyImage.openCamera(activity,1);
+                                                     EasyImage.openChooserWithGallery(activity,"",1);
 
+                                                 }catch (Exception e){
+                                                     e.printStackTrace();
+                                                 }
+                                             }
+                                         });
         //Click Send Button
         mChatView.setOnClickSendButtonListener(new View.OnClickListener() {
             @Override
