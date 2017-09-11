@@ -5,16 +5,22 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
+import android.widget.ImageView;
 
-import com.github.bassaer.chatmessageview.models.Message;
-import com.github.bassaer.chatmessageview.models.User;
-import com.github.bassaer.chatmessageview.utils.ChatBot;
-import com.github.bassaer.chatmessageview.views.ChatView;
+//import com.github.bassaer.chatmessageview.models.Message;
+//import com.github.bassaer.chatmessageview.models.User;
+//import com.github.bassaer.chatmessageview.utils.ChatBot;
+//import com.github.bassaer.chatmessageview.views.ChatView;
+import com.squareup.picasso.Picasso;
+import com.stfalcon.chatkit.commons.ImageLoader;
+import com.stfalcon.chatkit.messages.MessagesListAdapter;
 import com.tylerjroach.eventsource.EventSource;
 import com.tylerjroach.eventsource.EventSourceHandler;
 import com.tylerjroach.eventsource.MessageEvent;
@@ -22,8 +28,12 @@ import com.tylerjroach.eventsource.MessageEvent;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -33,16 +43,37 @@ import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.R;
 import co.getchannel.channel.helpers.CHConstants;
 import co.getchannel.channel.models.CHClient;
+import co.getchannel.channel.models.ui.Message;
+import co.getchannel.channel.models.ui.User;
 import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 
-public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete {
+
+
+public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,com.stfalcon.chatkit.messages.MessagesListAdapter.SelectionListener,
+        com.stfalcon.chatkit.messages.MessagesListAdapter.OnLoadMoreListener {
     private RecyclerView recyclerView;
-    private ChatView mChatView;
+
     private SSEHandler sseHandler = new SSEHandler();
     private ChatActivity activity;
+    protected ImageLoader imageLoader;
+    protected MessagesListAdapter<Message> messagesAdapter;
+
+    private Menu menu;
+    private int selectionCount;
+    private Date lastLoadedDate;
 
     private EventSource eventSource;
+
+    @Override
+    public void onSelectionChanged(int count) {
+
+    }
+    @Override
+    public void onLoadMore(int page, int totalItemsCount) {
+
+    }
+
     private void startEventSource() {
         EventSource eventSource;
         Map<String,String> extraHeaderParameters = new HashMap<String,String>() ;
@@ -80,30 +111,30 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
 
             try  {
-                JSONObject mainObject = new JSONObject(message.data);
-                JSONObject data = mainObject.getJSONObject("data");
-                String text = data.getString("text");
-
-                JSONObject sender = mainObject.getJSONObject("sender");
-                String name = sender.getString("name");
-
-                Calendar cal = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                try {
-                    cal.setTime(sdf.parse(data.getString("createdAt")));// all done
-                }catch (Exception e){
-
-                }
-                Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-                final User me = new User(0, name, myIcon);
-                final Message receivedMessage = new Message.Builder()
-                        .setUser(me)
-                        .setRightMessage(false)
-                        .setMessageText(text)
-                        .setCreatedAt(cal)
-                        .hideIcon(false)
-                        .build();
-                mChatView.receive(receivedMessage);
+//                JSONObject mainObject = new JSONObject(message.data);
+//                JSONObject data = mainObject.getJSONObject("data");
+//                String text = data.getString("text");
+//
+//                JSONObject sender = mainObject.getJSONObject("sender");
+//                String name = sender.getString("name");
+//
+//                Calendar cal = Calendar.getInstance();
+//                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+//                try {
+//                    cal.setTime(sdf.parse(data.getString("createdAt")));// all done
+//                }catch (Exception e){
+//
+//                }
+//                Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
+//                final User me = new User(0, name, myIcon);
+//                final Message receivedMessage = new Message.Builder()
+//                        .setUser(me)
+//                        .setRightMessage(false)
+//                        .setMessageText(text)
+//                        .setCreatedAt(cal)
+//                        .hideIcon(false)
+//                        .build();
+//                mChatView.receive(receivedMessage);
 
 //                // Return within 3 seconds
 //                int sendDelay = (new Random().nextInt(4) + 1) * 1000;
@@ -143,60 +174,89 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     }
 
+    private MessagesListAdapter.Formatter<Message> getMessageStringFormatter() {
+        return new MessagesListAdapter.Formatter<Message>() {
+            @Override
+            public String format(Message message) {
+                String createdAt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                        .format(message.getCreatedAt());
+
+                String text = message.getText();
+                if (text == null) text = "[attachment]";
+
+                return String.format(Locale.getDefault(), "%s: %s (%s)",
+                        message.getUser().getName(), text, createdAt);
+            }
+        };
+    }
+
     public void complete(CHThreadResponse data){
+        final ArrayList<Message> messages = new ArrayList<Message>();
+        for (CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage msg : data.getResult().getData().getMessages()) {
+            User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),msg.getSender().getProfilePictureURL(),false);
+            Message m = new Message(msg.getData().getText(),u,msg.getCreatedAt());
+            messages.add(m);
+        }
+
+        new Handler().postDelayed(new Runnable() { //imitation of internet connection
+            @Override
+            public void run() {
+                messagesAdapter.addToEnd(messages, false);
+            }
+        }, 1000);
 //        recyclerView.setAdapter(new ChatsAdapter(data.getResul   t().getData().getMessages(), R.layout.list_item_movie, getApplicationContext()));
 
-        for (CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage msg : data.getResult().getData().getMessages()) {
-            //User id
-            int myId = 0;
-            //User icon
-            Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-
+//        for (CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage msg : data.getResult().getData().getMessages()) {
+//            //User id
+//            int myId = 0;
+//            //User icon
+//            Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
+//
+////            try {
+////                String img = msg.getSender().getProfilePictureURL();
+////                URL url = new URL(msg.getSender().getProfilePictureURL());
+////                myIcon = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+////            } catch(Exception e) {
+////
+////            }
+//            //User name
+//            String myName = msg.getSender().getName();
+//            //new message
+//            final User me = new User(myId, myName, myIcon);
+//
+//            Calendar cal = Calendar.getInstance();
+//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 //            try {
-//                String img = msg.getSender().getProfilePictureURL();
-//                URL url = new URL(msg.getSender().getProfilePictureURL());
-//                myIcon = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-//            } catch(Exception e) {
+//                cal.setTime(sdf.parse(msg.getCreatedAt()));// all done
+//            }catch (Exception e){
 //
 //            }
-            //User name
-            String myName = msg.getSender().getName();
-            //new message
-            final User me = new User(myId, myName, myIcon);
-
-            Calendar cal = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            try {
-                cal.setTime(sdf.parse(msg.getCreatedAt()));// all done
-            }catch (Exception e){
-
-            }
-
-
-            if (msg.getFromBusiness()){
-                Message message = new Message.Builder()
-                        .setUser(me)
-                        .setRightMessage(false)
-                        .setMessageText(msg.getData().getText())
-                        .setCreatedAt(cal)
-                        .hideIcon(false)
-                        .build();
-
-                //Set to chat view
-                mChatView.receive(message);
-            }else{
-                Message message = new Message.Builder()
-                        .setUser(me)
-                        .setRightMessage(true)
-                        .setMessageText(msg.getData().getText())
-                        .setCreatedAt(cal)
-                        .hideIcon(true)
-                        .build();
-                //Set to chat view
-                mChatView.send(message);
-            }
-
-        }
+//
+//
+//            if (msg.getFromBusiness()){
+//                Message message = new Message.Builder()
+//                        .setUser(me)
+//                        .setRightMessage(false)
+//                        .setMessageText(msg.getData().getText())
+//                        .setCreatedAt(cal)
+//                        .hideIcon(false)
+//                        .build();
+//
+//                //Set to chat view
+//                mChatView.receive(message);
+//            }else{
+//                Message message = new Message.Builder()
+//                        .setUser(me)
+//                        .setRightMessage(true)
+//                        .setMessageText(msg.getData().getText())
+//                        .setCreatedAt(cal)
+//                        .hideIcon(true)
+//                        .build();
+//                //Set to chat view
+//                mChatView.send(message);
+//            }
+//
+//        }
     }
 
     @Override
@@ -204,6 +264,12 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         activity = this;
+        imageLoader = new ImageLoader() {
+            @Override
+            public void loadImage(ImageView imageView, String url) {
+                Picasso.with(activity).load(url).into(imageView);
+            }
+        };
 
 //        recyclerView = (RecyclerView) findViewById(R.id.movies_recycler_view);
 //        recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -214,77 +280,77 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 //        CHClient.updateClientData(userID,userData);
        CHClient.activeThread(this);
 
-        //User id
-        int myId = 0;
-        //User icon
-        Bitmap myIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-        //User name
-        String myName = "Michael";
-
-        int yourId = 1;
-        Bitmap yourIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_1);
-        String yourName = "Emily";
-
-        final User me = new User(myId, myName, myIcon);
-        final User you = new User(yourId, yourName, yourIcon);
-
-        mChatView = (ChatView)findViewById(R.id.chat_view);
-
-        //Set UI parameters if you need
-        mChatView.setRightBubbleColor(ContextCompat.getColor(this, R.color.green500));
-        mChatView.setLeftBubbleColor(Color.WHITE);
-        mChatView.setBackgroundColor(ContextCompat.getColor(this, R.color.teal100));
-        mChatView.setSendButtonColor(ContextCompat.getColor(this, R.color.cyan900));
-        mChatView.setSendIcon(R.drawable.ic_action_send);
-        mChatView.setRightMessageTextColor(Color.WHITE);
-        mChatView.setLeftMessageTextColor(Color.BLACK);
-        mChatView.setUsernameTextColor(Color.WHITE);
-        mChatView.setSendTimeTextColor(Color.WHITE);
-        mChatView.setDateSeparatorColor(Color.WHITE);
-        mChatView.setInputTextHint("new message...");
-        mChatView.setMessageMarginTop(5);
-        mChatView.setMessageMarginBottom(5);
-
-        //Click Send Button
-        mChatView.setOnClickSendButtonListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                co.getchannel.channel.models.internal.Message m = new co.getchannel.channel.models.internal.Message();
-                m.setText(mChatView.getInputText());
-                CHClient.currentClient().sendMessage(activity,m);
-
-                //new message
-                Message message = new Message.Builder()
-                        .setUser(me)
-                        .setRightMessage(true)
-                        .setMessageText(mChatView.getInputText())
-                        .hideIcon(true)
-                        .build();
-                //Set to chat view
-                mChatView.send(message);
-                //Reset edit text
-                mChatView.setInputText("");
+//        //User id
+//        int myId = 0;
+//        //User icon
+//        Bitmap myIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
+//        //User name
+//        String myName = "Michael";
 //
-//                //Receive message
-//                final Message receivedMessage = new Message.Builder()
-//                        .setUser(you)
-//                        .setRightMessage(false)
-//                        .setMessageText(ChatBot.talk(me.getName(), message.getMessageText()))
+//        int yourId = 1;
+//        Bitmap yourIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_1);
+//        String yourName = "Emily";
+//
+//        final User me = new User(myId, myName, myIcon);
+//        final User you = new User(yourId, yourName, yourIcon);
+//
+//        mChatView = (ChatView)findViewById(R.id.chat_view);
+//
+//        //Set UI parameters if you need
+//        mChatView.setRightBubbleColor(ContextCompat.getColor(this, R.color.green500));
+//        mChatView.setLeftBubbleColor(Color.WHITE);
+//        mChatView.setBackgroundColor(ContextCompat.getColor(this, R.color.teal100));
+//        mChatView.setSendButtonColor(ContextCompat.getColor(this, R.color.cyan900));
+//        mChatView.setSendIcon(R.drawable.ic_action_send);
+//        mChatView.setRightMessageTextColor(Color.WHITE);
+//        mChatView.setLeftMessageTextColor(Color.BLACK);
+//        mChatView.setUsernameTextColor(Color.WHITE);
+//        mChatView.setSendTimeTextColor(Color.WHITE);
+//        mChatView.setDateSeparatorColor(Color.WHITE);
+//        mChatView.setInputTextHint("new message...");
+//        mChatView.setMessageMarginTop(5);
+//        mChatView.setMessageMarginBottom(5);
+//
+//        //Click Send Button
+//        mChatView.setOnClickSendButtonListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//                co.getchannel.channel.models.internal.Message m = new co.getchannel.channel.models.internal.Message();
+//                m.setText(mChatView.getInputText());
+//                CHClient.currentClient().sendMessage(activity,m);
+//
+//                //new message
+//                Message message = new Message.Builder()
+//                        .setUser(me)
+//                        .setRightMessage(true)
+//                        .setMessageText(mChatView.getInputText())
+//                        .hideIcon(true)
 //                        .build();
+//                //Set to chat view
+//                mChatView.send(message);
+//                //Reset edit text
+//                mChatView.setInputText("");
+////
+////                //Receive message
+////                final Message receivedMessage = new Message.Builder()
+////                        .setUser(you)
+////                        .setRightMessage(false)
+////                        .setMessageText(ChatBot.talk(me.getName(), message.getMessageText()))
+////                        .build();
+////
+////                // This is a demo bot
+////                // Return within 3 seconds
+////                int sendDelay = (new Random().nextInt(4) + 1) * 1000;
+////                new Handler().postDelayed(new Runnable() {
+////                    @Override
+////                    public void run() {
+////                        mChatView.receive(receivedMessage);
+////                    }
+////                }, sendDelay);
+//            }
 //
-//                // This is a demo bot
-//                // Return within 3 seconds
-//                int sendDelay = (new Random().nextInt(4) + 1) * 1000;
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mChatView.receive(receivedMessage);
-//                    }
-//                }, sendDelay);
-            }
-
-        });
+//        });
 
 
         this.startEventSource();
