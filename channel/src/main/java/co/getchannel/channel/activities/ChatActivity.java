@@ -1,34 +1,44 @@
 package co.getchannel.channel.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
 
-//import com.github.bassaer.chatmessageview.models.Message;
-//import com.github.bassaer.chatmessageview.models.User;
-//import com.github.bassaer.chatmessageview.utils.ChatBot;
-//import com.github.bassaer.chatmessageview.views.ChatView;
+
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
+
+//import com.mindorks.paracamera.Camera;
+
 import com.tylerjroach.eventsource.EventSource;
 import com.tylerjroach.eventsource.EventSourceHandler;
 import com.tylerjroach.eventsource.MessageEvent;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -50,11 +60,19 @@ import co.getchannel.channel.models.ui.Message;
 import co.getchannel.channel.models.ui.User;
 import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
+import co.getchannel.channel.callback.UploadMessageImageComplete;
+import co.getchannel.channel.helpers.CHConstants;
+import co.getchannel.channel.models.CHClient;
+import co.getchannel.channel.responses.CHMessageImageResponse;
+import co.getchannel.channel.responses.CHMessageResponse;
+import co.getchannel.channel.responses.CHThreadResponse;
+import pl.aprilapps.easyphotopicker.DefaultCallback;
+import pl.aprilapps.easyphotopicker.EasyImage;
 
-
-public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,com.stfalcon.chatkit.messages.MessagesListAdapter.SelectionListener,
+public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,UploadMessageImageComplete,com.stfalcon.chatkit.messages.MessagesListAdapter.SelectionListener,
         com.stfalcon.chatkit.messages.MessagesListAdapter.OnLoadMoreListener,com.stfalcon.chatkit.messages.MessageInput.InputListener,
         com.stfalcon.chatkit.messages.MessageInput.AttachmentsListener  {
+
     private RecyclerView recyclerView;
 
 
@@ -68,6 +86,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     private Menu menu;
     private int selectionCount;
     private Date lastLoadedDate;
+
 
     private EventSource eventSource;
 
@@ -88,11 +107,11 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     @Override
     public boolean onSubmit(CharSequence input) {
-String id = CHClient.currentClient().getClientID();
-        User u = new User(null,"tui","https://cdn.getchannel.co/img/characters/2.png",false);
+
+        User u = new User("www","tui","https://cdn.getchannel.co/img/characters/2.png",false);
         Message m = new Message("0",u,input.toString());
-//        messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
-         messagesAdapter.addToStart(m, true);
+      //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
+      messagesAdapter.addToStart(m, true);
         return true;
     }
 
@@ -131,48 +150,6 @@ String id = CHClient.currentClient().getClientID();
 //            Log.v("SSE Message", event);
 //            Log.v("SSE Message: ", message.lastEventId);
 //            Log.v("SSE Message: ", message.data);
-
-
-            try  {
-//                JSONObject mainObject = new JSONObject(message.data);
-//                JSONObject data = mainObject.getJSONObject("data");
-//                String text = data.getString("text");
-//
-//                JSONObject sender = mainObject.getJSONObject("sender");
-//                String name = sender.getString("name");
-//
-//                Calendar cal = Calendar.getInstance();
-//                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-//                try {
-//                    cal.setTime(sdf.parse(data.getString("createdAt")));// all done
-//                }catch (Exception e){
-//
-//                }
-//                Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-//                final User me = new User(0, name, myIcon);
-//                final Message receivedMessage = new Message.Builder()
-//                        .setUser(me)
-//                        .setRightMessage(false)
-//                        .setMessageText(text)
-//                        .setCreatedAt(cal)
-//                        .hideIcon(false)
-//                        .build();
-//                mChatView.receive(receivedMessage);
-
-//                // Return within 3 seconds
-//                int sendDelay = (new Random().nextInt(4) + 1) * 1000;
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mChatView.receive(receivedMessage);
-//                    }
-//                }, sendDelay);
-
-
-            }catch (Exception e){
-
-            }
-
         }
 
         @Override
@@ -193,9 +170,32 @@ String id = CHClient.currentClient().getClientID();
         }
     }
 
+    public static Bitmap getBitmapFromURL(String src) {
+        try {
+//            src = src.replace("localhost", "10.0.2.2");
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void complete(CHMessageImageResponse data){
+        Log.d(CHConstants.kChannel_tag,data.getResult().getData().getUrl());
+        co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
+        message.setImageData(data.getResult().getData().getUrl());
+        CHClient.currentClient().sendImage(activity,message);
+    }
     public void complete(CHMessageResponse data){
 
     }
+
 
     private MessagesListAdapter.Formatter<Message> getMessageStringFormatter() {
         return new MessagesListAdapter.Formatter<Message>() {
@@ -215,7 +215,7 @@ String id = CHClient.currentClient().getClientID();
 
     public void complete(CHThreadResponse data){
         final ArrayList<Message> messages = new ArrayList<Message>();
-        for (CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage msg : data.getResult().getData().getMessages()) {
+        for (CHMessageResponse msg : data.getResult().getData().getMessages()) {
             User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),msg.getSender().getProfilePictureURL(),false);
             Message m = new Message(msg.getData().getText(),u,msg.getCreatedAt());
             messages.add(m);
@@ -297,6 +297,7 @@ String id = CHClient.currentClient().getClientID();
                     }
                 });
         this.messagesList.setAdapter(messagesAdapter);
+
     }
 
 
@@ -315,16 +316,30 @@ String id = CHClient.currentClient().getClientID();
         this.messagesList = (MessagesList) findViewById(R.id.messagesList);
         initAdapter();
 
+
         MessageInput input = (MessageInput) findViewById(R.id.input);
         input.setInputListener(this);
 //        recyclerView = (RecyclerView) findViewById(R.id.movies_recycler_view);
 //        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-//        Intent intent = getIntent();
-//        HashMap<String, String> userData = (HashMap<String, String>)intent.getSerializableExtra("userData");
-//        String userID = (String)intent.getSerializableExtra("userID");
-//        CHClient.updateClientData(userID,userData);
-       CHClient.activeThread(this);
+
+//        camera = new Camera.Builder()
+//                .resetToCorrectOrientation(true)// it will rotate the camera bitmap to the correct orientation from meta data
+//                .setTakePhotoRequestCode(1)
+//                .setDirectory("pics")
+//                .setName("channel_" + System.currentTimeMillis())
+//                .setImageFormat(Camera.IMAGE_JPEG)
+//                .setCompression(75)
+//                .setImageHeight(1000)// it will try to achieve this height as close as possible maintaining the aspect ratio;
+//                .build(this);
+
+
+        Intent intent = getIntent();
+        HashMap<String, String> userData = (HashMap<String, String>)intent.getSerializableExtra("userData");
+        String userID = (String)intent.getSerializableExtra("userID");
+        CHClient.updateClientData(userID,userData);
+        CHClient.activeThread(this);
+
 
 //        //User id
 //        int myId = 0;
@@ -372,6 +387,13 @@ String id = CHClient.currentClient().getClientID();
 //                        .setRightMessage(true)
 //                        .setMessageText(mChatView.getInputText())
 //                        .hideIcon(true)
+
+//
+                //Receive message
+//                final Message receivedMessage = new Message.Builder()
+//                        .setUser(you)
+//                        .setRightMessage(false)
+//                        .setMessageText(ChatBot.talk(me.getName(), "xxx"))
 //                        .build();
 //                //Set to chat view
 //                mChatView.send(message);
