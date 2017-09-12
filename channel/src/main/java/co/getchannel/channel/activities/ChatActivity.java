@@ -20,6 +20,8 @@ import android.widget.ImageView;
 //import com.github.bassaer.chatmessageview.views.ChatView;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
+import com.stfalcon.chatkit.messages.MessageInput;
+import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 import com.tylerjroach.eventsource.EventSource;
 import com.tylerjroach.eventsource.EventSourceHandler;
@@ -41,6 +43,7 @@ import co.getchannel.channel.CHConfiguration;
 import co.getchannel.channel.callback.SendMessageComplete;
 import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.R;
+import co.getchannel.channel.common.data.MessagesFixtures;
 import co.getchannel.channel.helpers.CHConstants;
 import co.getchannel.channel.models.CHClient;
 import co.getchannel.channel.models.ui.Message;
@@ -49,15 +52,18 @@ import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 
 
-
 public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,com.stfalcon.chatkit.messages.MessagesListAdapter.SelectionListener,
-        com.stfalcon.chatkit.messages.MessagesListAdapter.OnLoadMoreListener {
+        com.stfalcon.chatkit.messages.MessagesListAdapter.OnLoadMoreListener,com.stfalcon.chatkit.messages.MessageInput.InputListener,
+        com.stfalcon.chatkit.messages.MessageInput.AttachmentsListener  {
     private RecyclerView recyclerView;
+
 
     private SSEHandler sseHandler = new SSEHandler();
     private ChatActivity activity;
     protected ImageLoader imageLoader;
     protected MessagesListAdapter<Message> messagesAdapter;
+    private MessagesList messagesList;
+
 
     private Menu menu;
     private int selectionCount;
@@ -73,6 +79,23 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     public void onLoadMore(int page, int totalItemsCount) {
 
     }
+
+    @Override
+    public void onAddAttachments() {
+        messagesAdapter.addToStart(
+                MessagesFixtures.getImageMessage(), true);
+    }
+
+    @Override
+    public boolean onSubmit(CharSequence input) {
+String id = CHClient.currentClient().getClientID();
+        User u = new User(null,"tui","https://cdn.getchannel.co/img/characters/2.png",false);
+        Message m = new Message("0",u,input.toString());
+//        messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
+         messagesAdapter.addToStart(m, true);
+        return true;
+    }
+
 
     private void startEventSource() {
         EventSource eventSource;
@@ -259,6 +282,24 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 //        }
     }
 
+
+    private void initAdapter() {
+        messagesAdapter = new MessagesListAdapter<>(CHClient.currentClient().getClientID(), imageLoader);
+        messagesAdapter.enableSelectionMode(this);
+        messagesAdapter.setLoadMoreListener(this);
+        messagesAdapter.registerViewClickListener(R.id.messageUserAvatar,
+                new MessagesListAdapter.OnMessageViewClickListener<Message>() {
+                    @Override
+                    public void onMessageViewClick(View view, Message message) {
+//                        AppUtils.showToast(DefaultMessagesActivity.this,
+//                                message.getUser().getName() + " avatar click",
+//                                false);
+                    }
+                });
+        this.messagesList.setAdapter(messagesAdapter);
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -271,6 +312,11 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             }
         };
 
+        this.messagesList = (MessagesList) findViewById(R.id.messagesList);
+        initAdapter();
+
+        MessageInput input = (MessageInput) findViewById(R.id.input);
+        input.setInputListener(this);
 //        recyclerView = (RecyclerView) findViewById(R.id.movies_recycler_view);
 //        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
