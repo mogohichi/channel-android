@@ -11,16 +11,19 @@ import co.getchannel.channel.CHConfiguration;
 import co.getchannel.channel.Channel;
 import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.callback.SendMessageComplete;
+import co.getchannel.channel.callback.UploadMessageImageComplete;
 import co.getchannel.channel.api.CHAPI;
 import co.getchannel.channel.api.CHAPIInterface;
 import co.getchannel.channel.helpers.CHConstants;
 import co.getchannel.channel.models.internal.Agent;
 import co.getchannel.channel.models.internal.Application;
 import co.getchannel.channel.models.internal.Client;
+import co.getchannel.channel.models.internal.ImageData;
 import co.getchannel.channel.models.internal.Message;
 import co.getchannel.channel.models.internal.MessageData;
 import co.getchannel.channel.responses.CHApplicationInfoResponse;
 import co.getchannel.channel.responses.CHClientResponse;
+import co.getchannel.channel.responses.CHMessageImageResponse;
 import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 
@@ -202,9 +205,28 @@ public class CHClient {
         });
     }
 
+    public static void sendImage(final SendMessageComplete sentComplete, Message message){
+        CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
+        Call<CHMessageResponse> call = apiService.sendMessage(message);
+        call.enqueue(new Callback<CHMessageResponse>() {
+            @Override
+            public void onResponse(Call<CHMessageResponse> call, Response<CHMessageResponse> response) {
+                if (response.code() == 200){
+                    Log.d(CHConstants.kChannel_tag, "activeThread " + response.body());
+                    sentComplete.complete(response.body());
+                }else{
+                    Log.d(CHConstants.kChannel_tag, response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CHMessageResponse>call, Throwable t) {
+                // Log error here since request failed
+                Log.d(CHConstants.kChannel_tag,t.toString());
+            }
+        });
+    }
     public static void sendMessage(final SendMessageComplete sentComplete, Message message){
-
-
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         MessageData md = new MessageData();
         md.setData(message);
@@ -222,6 +244,29 @@ public class CHClient {
 
             @Override
             public void onFailure(Call<CHMessageResponse>call, Throwable t) {
+                // Log error here since request failed
+                Log.d(CHConstants.kChannel_tag,t.toString());
+            }
+        });
+    }
+
+    public static void uploadMessageImage(final UploadMessageImageComplete uploadComplete, String imageBase64){
+        CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
+        ImageData img = new ImageData();
+        img.setImageBase64(imageBase64);
+        Call<CHMessageImageResponse> call = apiService.uploadMessageImage(img);
+        call.enqueue(new Callback<CHMessageImageResponse>() {
+            @Override
+            public void onResponse(Call<CHMessageImageResponse> call, Response<CHMessageImageResponse> response) {
+                if (response.code() == 200){
+                    uploadComplete.complete(response.body());
+                }else{
+                    Log.d(CHConstants.kChannel_tag, response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CHMessageImageResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
             }

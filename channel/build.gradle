@@ -83,8 +83,10 @@ dependencies {
     compile 'com.squareup.okio:okio:1.6.0'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
     compile 'com.squareup.okhttp3:logging-interceptor:3.8.1'
-        compile 'com.github.bassaer:chatmessageview:1.3.3'
+//        compile 'com.github.bassaer:chatmessageview:1.3.3'
     compile 'com.tylerjroach:eventsource:1.2.11'
+    compile 'com.github.jkwiecien:EasyImage:1.3.1'
+
 //    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 
     compile "com.android.support:appcompat-v7:26.0.0-alpha1"
@@ -100,4 +102,5 @@ dependencies {
 
     //Utils
     compile "me.relex:circleindicator:1.2.2@aar"
+
 }

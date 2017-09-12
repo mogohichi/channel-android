@@ -2,6 +2,8 @@ package co.getchannel.channel.responses;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.json.JSONObject;
+
 /**
  * Created by rataphon on 8/25/2017 AD.
  */
@@ -18,9 +20,9 @@ public class CHMessageResponse {
     @SerializedName("isNewMessage")
     private Boolean isNewMessage;
     @SerializedName("data")
-    private CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage.CHThreadMessageData data;
+    private CHMessageData data;
     @SerializedName("sender")
-    private CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage.CHThreadMessageSender sender;
+    private CHMessageSender sender;
 
     public String getCreatedAt() {
         return createdAt;
@@ -62,25 +64,27 @@ public class CHMessageResponse {
         isNewMessage = newMessage;
     }
 
-    public CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage.CHThreadMessageData getData() {
+    public CHMessageData getData() {
         return data;
     }
 
-    public void setData(CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage.CHThreadMessageData data) {
+    public void setData(CHMessageData data) {
         this.data = data;
     }
 
-    public CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage.CHThreadMessageSender getSender() {
+    public CHMessageSender getSender() {
         return sender;
     }
 
-    public void setSender(CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage.CHThreadMessageSender sender) {
+    public void setSender(CHMessageSender sender) {
         this.sender = sender;
     }
 
-    public class CHThreadMessageData{
+    public class CHMessageData{
         @SerializedName("text")
         private String text;
+        @SerializedName("card")
+        private CHCard card;
 
         public String getText() {
             return text;
@@ -89,8 +93,53 @@ public class CHMessageResponse {
         public void setText(String text) {
             this.text = text;
         }
+
+        public CHCard getCard() {
+            return card;
+        }
+
+        public void setCard(CHCard card) {
+            this.card = card;
+        }
+
+        public class CHCard {
+            @SerializedName("type")
+            private String type;
+            @SerializedName("payload")
+            private CHPayload payload;
+
+            public String getType() {
+                return type;
+            }
+
+            public void setType(String type) {
+                this.type = type;
+            }
+
+            public CHPayload getPayload() {
+                return payload;
+            }
+
+            public void setPayload(CHPayload payload) {
+                this.payload = payload;
+            }
+
+            public class CHPayload {
+                @SerializedName("url")
+                private String url;
+
+                public String getUrl() {
+                    return url;
+                }
+
+                public void setUrl(String url) {
+                    this.url = url;
+                }
+            }
+
+        }
     }
-    public class CHThreadMessageSender{
+    public class CHMessageSender{
         @SerializedName("clientID")
         private String clientID;
         @SerializedName("name")
