@@ -99,19 +99,22 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     }
 
+
     @Override
     public void onAddAttachments() {
-        messagesAdapter.addToStart(
-                MessagesFixtures.getImageMessage(), true);
+        EasyImage.openChooserWithGallery(activity,"",1);
     }
 
     @Override
     public boolean onSubmit(CharSequence input) {
+        co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
+        msg.setText(input.toString());
+        CHClient.currentClient().sendMessage(activity,msg);
 
-        User u = new User("www","tui","https://cdn.getchannel.co/img/characters/2.png",false);
-        Message m = new Message("0",u,input.toString());
-      //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
-      messagesAdapter.addToStart(m, true);
+        User u = new User("","channel","imageProfile",false);
+        Message m = new Message("messageID",u,input.toString());
+        //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
+        messagesAdapter.addToStart(m, true);
         return true;
     }
 
@@ -150,6 +153,42 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 //            Log.v("SSE Message", event);
 //            Log.v("SSE Message: ", message.lastEventId);
 //            Log.v("SSE Message: ", message.data);
+            try{
+                JSONObject  mainObject = new JSONObject(message.data);
+                JSONObject data = mainObject.getJSONObject("data");
+
+                String type = "";
+                try{
+                    JSONObject messageData = data.getJSONObject("card");
+                    if (messageData != null){
+                        type = messageData.getString("type");
+                    }
+                }catch (Exception e){
+
+                }
+                JSONObject sender = mainObject.getJSONObject("sender");
+                User u = new User(sender.getString("clientID"),sender.getString("name"),sender.getString("profilePictureURL"),false);
+                final Message m = new Message(mainObject.getString("id"),u,null);
+                if(type.equals("image")){
+                    String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //data.getJSONObject("card").getJSONObject("payload").getString("url");
+                    m.setText("sent an attachment");
+                    m.setImage(new Message.Image(url));
+                }else{
+                    m.setText(data.getString("text"));
+                }
+
+                // Get a handler that can be used to post to the main thread
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                Runnable myRunnable = new Runnable() {
+                    @Override
+                    public void run() {messagesAdapter.addToStart(m,true);} // This is your code
+                };
+                mainHandler.post(myRunnable);
+
+
+            }catch (Exception e){
+
+            }
         }
 
         @Override
@@ -186,12 +225,22 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         }
     }
 
+    //upload complete
     public void complete(CHMessageImageResponse data){
         Log.d(CHConstants.kChannel_tag,data.getResult().getData().getUrl());
         co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
         message.setImageData(data.getResult().getData().getUrl());
         CHClient.currentClient().sendImage(activity,message);
+        User u = new User("","channel","imageProfile",false);
+        Message m = new Message("",u,"sent and attachment");
+        m.setImage(new Message.Image(data.
+                getResult().getData().getUrl()));
+        //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
+        messagesAdapter.addToStart(m, true);
+
     }
+
+
     public void complete(CHMessageResponse data){
 
     }
@@ -217,73 +266,36 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         final ArrayList<Message> messages = new ArrayList<Message>();
         for (CHMessageResponse msg : data.getResult().getData().getMessages()) {
             User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),msg.getSender().getProfilePictureURL(),false);
-            Message m = new Message(msg.getData().getText(),u,msg.getCreatedAt());
+            Message m = new Message(msg.getID(),u,null);
+
+            if (msg.getData().getCard() != null){
+                //
+                String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //msg.getData().getCard().getPayload().getUrl();
+                m.setImage(new Message.Image(url));
+                m.setText("sent an attachment");
+            }else{
+                m.setText(msg.getData().getText());
+            }
             messages.add(m);
         }
 
         new Handler().postDelayed(new Runnable() { //imitation of internet connection
             @Override
             public void run() {
-                messagesAdapter.addToEnd(messages, false);
+                messagesAdapter.addToEnd(messages, true);
             }
         }, 1000);
-//        recyclerView.setAdapter(new ChatsAdapter(data.getResul   t().getData().getMessages(), R.layout.list_item_movie, getApplicationContext()));
-
-//        for (CHThreadResponse.CHThreadResult.CHThreadData.CHThreadMessage msg : data.getResult().getData().getMessages()) {
-//            //User id
-//            int myId = 0;
-//            //User icon
-//            Bitmap myIcon  = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-//
-////            try {
-////                String img = msg.getSender().getProfilePictureURL();
-////                URL url = new URL(msg.getSender().getProfilePictureURL());
-////                myIcon = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-////            } catch(Exception e) {
-////
-////            }
-//            //User name
-//            String myName = msg.getSender().getName();
-//            //new message
-//            final User me = new User(myId, myName, myIcon);
-//
-//            Calendar cal = Calendar.getInstance();
-//            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-//            try {
-//                cal.setTime(sdf.parse(msg.getCreatedAt()));// all done
-//            }catch (Exception e){
-//
-//            }
-//
-//
-//            if (msg.getFromBusiness()){
-//                Message message = new Message.Builder()
-//                        .setUser(me)
-//                        .setRightMessage(false)
-//                        .setMessageText(msg.getData().getText())
-//                        .setCreatedAt(cal)
-//                        .hideIcon(false)
-//                        .build();
-//
-//                //Set to chat view
-//                mChatView.receive(message);
-//            }else{
-//                Message message = new Message.Builder()
-//                        .setUser(me)
-//                        .setRightMessage(true)
-//                        .setMessageText(msg.getData().getText())
-//                        .setCreatedAt(cal)
-//                        .hideIcon(true)
-//                        .build();
-//                //Set to chat view
-//                mChatView.send(message);
-//            }
-//
-//        }
     }
 
 
     private void initAdapter() {
+        imageLoader = new ImageLoader() {
+            @Override
+            public void loadImage(ImageView imageView, String url) {
+                Picasso.with(activity).load(url).into(imageView);
+            }
+        };
+
         messagesAdapter = new MessagesListAdapter<>(CHClient.currentClient().getClientID(), imageLoader);
         messagesAdapter.enableSelectionMode(this);
         messagesAdapter.setLoadMoreListener(this);
@@ -301,17 +313,39 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     }
 
 
+    public String toBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
+    // Get the bitmap and image path onActivityResult of an activity or fragment
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        EasyImage.handleActivityResult(requestCode, resultCode, data, this, new DefaultCallback() {
+            @Override
+            public void onImagePickerError(Exception e, EasyImage.ImageSource source, int type) {
+                //Some error handling
+            }
+
+            @Override
+            public void onImagePicked(File imageFile, EasyImage.ImageSource source, int type){
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
+                if(bitmap != null) {
+                    CHClient.currentClient().uploadMessageImage(activity,toBase64(bitmap));
+                }
+            }
+        });
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         activity = this;
-        imageLoader = new ImageLoader() {
-            @Override
-            public void loadImage(ImageView imageView, String url) {
-                Picasso.with(activity).load(url).into(imageView);
-            }
-        };
 
         this.messagesList = (MessagesList) findViewById(R.id.messagesList);
         initAdapter();
@@ -319,19 +353,8 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
         MessageInput input = (MessageInput) findViewById(R.id.input);
         input.setInputListener(this);
-//        recyclerView = (RecyclerView) findViewById(R.id.movies_recycler_view);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        input.setAttachmentsListener(this);
 
-
-//        camera = new Camera.Builder()
-//                .resetToCorrectOrientation(true)// it will rotate the camera bitmap to the correct orientation from meta data
-//                .setTakePhotoRequestCode(1)
-//                .setDirectory("pics")
-//                .setName("channel_" + System.currentTimeMillis())
-//                .setImageFormat(Camera.IMAGE_JPEG)
-//                .setCompression(75)
-//                .setImageHeight(1000)// it will try to achieve this height as close as possible maintaining the aspect ratio;
-//                .build(this);
 
 
         Intent intent = getIntent();
@@ -339,87 +362,6 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         String userID = (String)intent.getSerializableExtra("userID");
         CHClient.updateClientData(userID,userData);
         CHClient.activeThread(this);
-
-
-//        //User id
-//        int myId = 0;
-//        //User icon
-//        Bitmap myIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_2);
-//        //User name
-//        String myName = "Michael";
-//
-//        int yourId = 1;
-//        Bitmap yourIcon = BitmapFactory.decodeResource(getResources(), R.drawable.face_1);
-//        String yourName = "Emily";
-//
-//        final User me = new User(myId, myName, myIcon);
-//        final User you = new User(yourId, yourName, yourIcon);
-//
-//        mChatView = (ChatView)findViewById(R.id.chat_view);
-//
-//        //Set UI parameters if you need
-//        mChatView.setRightBubbleColor(ContextCompat.getColor(this, R.color.green500));
-//        mChatView.setLeftBubbleColor(Color.WHITE);
-//        mChatView.setBackgroundColor(ContextCompat.getColor(this, R.color.teal100));
-//        mChatView.setSendButtonColor(ContextCompat.getColor(this, R.color.cyan900));
-//        mChatView.setSendIcon(R.drawable.ic_action_send);
-//        mChatView.setRightMessageTextColor(Color.WHITE);
-//        mChatView.setLeftMessageTextColor(Color.BLACK);
-//        mChatView.setUsernameTextColor(Color.WHITE);
-//        mChatView.setSendTimeTextColor(Color.WHITE);
-//        mChatView.setDateSeparatorColor(Color.WHITE);
-//        mChatView.setInputTextHint("new message...");
-//        mChatView.setMessageMarginTop(5);
-//        mChatView.setMessageMarginBottom(5);
-//
-//        //Click Send Button
-//        mChatView.setOnClickSendButtonListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//
-//                co.getchannel.channel.models.internal.Message m = new co.getchannel.channel.models.internal.Message();
-//                m.setText(mChatView.getInputText());
-//                CHClient.currentClient().sendMessage(activity,m);
-//
-//                //new message
-//                Message message = new Message.Builder()
-//                        .setUser(me)
-//                        .setRightMessage(true)
-//                        .setMessageText(mChatView.getInputText())
-//                        .hideIcon(true)
-
-//
-                //Receive message
-//                final Message receivedMessage = new Message.Builder()
-//                        .setUser(you)
-//                        .setRightMessage(false)
-//                        .setMessageText(ChatBot.talk(me.getName(), "xxx"))
-//                        .build();
-//                //Set to chat view
-//                mChatView.send(message);
-//                //Reset edit text
-//                mChatView.setInputText("");
-////
-////                //Receive message
-////                final Message receivedMessage = new Message.Builder()
-////                        .setUser(you)
-////                        .setRightMessage(false)
-////                        .setMessageText(ChatBot.talk(me.getName(), message.getMessageText()))
-////                        .build();
-////
-////                // This is a demo bot
-////                // Return within 3 seconds
-////                int sendDelay = (new Random().nextInt(4) + 1) * 1000;
-////                new Handler().postDelayed(new Runnable() {
-////                    @Override
-////                    public void run() {
-////                        mChatView.receive(receivedMessage);
-////                    }
-////                }, sendDelay);
-//            }
-//
-//        });
-
 
         this.startEventSource();
     }

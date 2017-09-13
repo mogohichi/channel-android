@@ -46,14 +46,31 @@
         android:layout_above="@+id/input"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:background="@color/blue"/>
+        android:background="@color/white"/>
+
+    <!--<com.stfalcon.chatkit.messages.MessageInput-->
+        <!--android:id="@+id/input"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--app:inputHint="Type a message ..."-->
+        <!--app:showAttachmentButton="true"/>-->
+
 
     <com.stfalcon.chatkit.messages.MessageInput
         android:id="@+id/input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:background="@color/colorGreyWhite"
+        app:attachmentButtonBackground="?attr/selectableItemBackgroundBorderless"
+        app:attachmentButtonDefaultIconColor="@color/blue"
+        app:attachmentButtonDefaultIconPressedColor="@color/blue"
+        app:attachmentButtonHeight="27dp"
+        app:attachmentButtonWidth="27dp"
+        app:inputButtonBackground="?attr/selectableItemBackgroundBorderless"
+        app:inputButtonDefaultIconColor="@color/blue"
+        app:inputButtonDefaultIconDisabledColor="@color/colorGrey"
         app:inputHint="Type a message ..."
         app:showAttachmentButton="true"/>
-
 </RelativeLayout>
