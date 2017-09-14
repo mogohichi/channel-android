@@ -177,6 +177,11 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                     m.setText(data.getString("text"));
                 }
 
+                JSONArray buttons = mainObject.getJSONArray("buttons");
+                if (buttons != null){
+                    Log.d("","");
+                }
+
                 // Get a handler that can be used to post to the main thread
                 Handler mainHandler = new Handler(Looper.getMainLooper());
                 Runnable myRunnable = new Runnable() {
@@ -276,6 +281,12 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             }else{
                 m.setText(msg.getData().getText());
             }
+
+            if (msg.getData().getButtons() != null){
+
+            }
+
+
             messages.add(m);
         }
 
@@ -354,6 +365,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         MessageInput input = (MessageInput) findViewById(R.id.input);
         input.setInputListener(this);
         input.setAttachmentsListener(this);
+
 
 
 

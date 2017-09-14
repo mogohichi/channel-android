@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONObject;
 
+import java.util.List;
+
 /**
  * Created by rataphon on 8/25/2017 AD.
  */
@@ -85,6 +87,16 @@ public class CHMessageResponse {
         private String text;
         @SerializedName("card")
         private CHCard card;
+        @SerializedName("buttons")
+        private List<CHButton> buttons;
+        public List<CHButton> getButtons() {
+            return buttons;
+        }
+
+        public void setButtons(List<CHButton> buttons) {
+            this.buttons = buttons;
+        }
+
 
         public String getText() {
             return text;
@@ -107,6 +119,8 @@ public class CHMessageResponse {
             private String type;
             @SerializedName("payload")
             private CHPayload payload;
+
+
 
             public String getType() {
                 return type;
@@ -137,6 +151,79 @@ public class CHMessageResponse {
                 }
             }
 
+        }
+
+        public class CHButton {
+            @SerializedName("title")
+            private String title;
+            @SerializedName("url")
+            private String url;
+            @SerializedName("id")
+            private String id;
+            @SerializedName("backgroundColor")
+            private String backgroundColor;
+            @SerializedName("textColor")
+            private String textColor;
+            @SerializedName("type")
+            private String type;
+            @SerializedName("payload")
+            private String payload;
+
+            public String getTitle() {
+                return title;
+            }
+
+            public void setTitle(String title) {
+                this.title = title;
+            }
+
+            public String getUrl() {
+                return url;
+            }
+
+            public void setUrl(String url) {
+                this.url = url;
+            }
+
+            public String getId() {
+                return id;
+            }
+
+            public void setId(String id) {
+                this.id = id;
+            }
+
+            public String getBackgroundColor() {
+                return backgroundColor;
+            }
+
+            public void setBackgroundColor(String backgroundColor) {
+                this.backgroundColor = backgroundColor;
+            }
+
+            public String getTextColor() {
+                return textColor;
+            }
+
+            public void setTextColor(String textColor) {
+                this.textColor = textColor;
+            }
+
+            public String getType() {
+                return type;
+            }
+
+            public void setType(String type) {
+                this.type = type;
+            }
+
+            public String getPayload() {
+                return payload;
+            }
+
+            public void setPayload(String payload) {
+                this.payload = payload;
+            }
         }
     }
     public class CHMessageSender{
