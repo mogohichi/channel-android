@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.ParseException;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.ContextCompat;
@@ -117,7 +118,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
         msg.setText(input.toString());
         CHClient.currentClient().sendMessage(activity,msg);
-        User u = new User(CHClient.currentClient().getClientID(),"channel","imageProfile",false);
+        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
         Message m = new Message("messageID",u,input.toString());
         messagesAdapter.addToStart(m, true);
         return true;
@@ -197,6 +198,15 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             String pic = msg.getSender().getProfilePictureURL();
             User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),pic,false);
             Message m = new Message(msg.getID(),u,null);
+
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            try {
+                Date date = format.parse(msg.getCreatedAt());
+                m.setCreatedAt(date);
+            } catch (Exception e) {
+
+            }
 
             if (msg.getData().getCard() != null){
                 //
@@ -280,7 +290,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                             co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
                             msg.setText(button.getTitle());
                             CHClient.currentClient().sendMessage(activity,msg);
-                            User u = new User(CHClient.currentClient().getClientID(),"channel","imageProfile",false);
+                            User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
                             Message m = new Message("messageID",u,button.getTitle());
                             messagesAdapter.addToStart(m, true);
                         }
@@ -316,7 +326,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
         message.setImageData(data.getResult().getData().getUrl());
         CHClient.currentClient().sendImage(activity,message);
-        User u = new User("","channel","imageProfile",false);
+        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
         Message m = new Message("",u,"sent and attachment");
         m.setImage(new Message.Image(data.
                 getResult().getData().getUrl()));
@@ -351,38 +361,6 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     //fetch complete
     public void complete(CHThreadResponse data){
         showMessages(data.getResult().getData().getMessages());
-//        final ArrayList<Message> messages = new ArrayList<Message>();
-//        CHMessageResponse latestMessage = null;
-//        for (CHMessageResponse msg : data.getResult().getData().getMessages()) {
-//
-//            String pic = msg.getSender().getProfilePictureURL();
-//            User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),pic,false);
-//            Message m = new Message(msg.getID(),u,null);
-//
-//            if (msg.getData().getCard() != null){
-//                //
-//                String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //msg.getData().getCard().getPayload().getUrl();
-//                m.setImage(new Message.Image(url));
-//                m.setText("sent an attachment");
-//            }else{
-//                m.setText(msg.getData().getText());
-//            }
-//
-//            latestMessage = msg;
-//            messages.add(m);
-//        }
-//
-//
-//        if (latestMessage.getData().getButtons() != null){
-//            showQuickReply(latestMessage.getData().getButtons());
-//        }
-//
-//        new Handler().postDelayed(new Runnable() { //imitation of internet connection
-//            @Override
-//            public void run() {
-//                messagesAdapter.addToEnd(messages, true);
-//            }
-//        }, 1000);
     }
 
 
