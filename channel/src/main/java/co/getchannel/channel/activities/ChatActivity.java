@@ -15,9 +15,15 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.messages.MessageInput;
@@ -81,6 +87,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     protected ImageLoader imageLoader;
     protected MessagesListAdapter<Message> messagesAdapter;
     private MessagesList messagesList;
+    private MessageInput messageInput;
 
 
     private Menu menu;
@@ -138,6 +145,8 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             eventSource.close();
         sseHandler = null;
     }
+
+
     private class SSEHandler implements EventSourceHandler {
 
         public SSEHandler() {
@@ -154,45 +163,52 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 //            Log.v("SSE Message: ", message.lastEventId);
 //            Log.v("SSE Message: ", message.data);
             try{
-                JSONObject  mainObject = new JSONObject(message.data);
-                JSONObject data = mainObject.getJSONObject("data");
+                List<CHMessageResponse> messages = new ArrayList<CHMessageResponse>();
+                CHMessageResponse msg = new Gson().fromJson(message.data, CHMessageResponse.class);
+                messages.add(msg);
+                showMessages(messages);
 
-                String type = "";
-                try{
-                    JSONObject messageData = data.getJSONObject("card");
-                    if (messageData != null){
-                        type = messageData.getString("type");
-                    }
-                }catch (Exception e){
-
-                }
-                JSONObject sender = mainObject.getJSONObject("sender");
-                User u = new User(sender.getString("clientID"),sender.getString("name"),sender.getString("profilePictureURL"),false);
-                final Message m = new Message(mainObject.getString("id"),u,null);
-                if(type.equals("image")){
-                    String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //data.getJSONObject("card").getJSONObject("payload").getString("url");
-                    m.setText("sent an attachment");
-                    m.setImage(new Message.Image(url));
-                }else{
-                    m.setText(data.getString("text"));
-                }
-
-                JSONArray buttons = mainObject.getJSONArray("buttons");
-                if (buttons != null){
-                    Log.d("","");
-                }
-
-                // Get a handler that can be used to post to the main thread
-                Handler mainHandler = new Handler(Looper.getMainLooper());
-                Runnable myRunnable = new Runnable() {
-                    @Override
-                    public void run() {messagesAdapter.addToStart(m,true);} // This is your code
-                };
-                mainHandler.post(myRunnable);
+//                JSONObject  mainObject = new JSONObject(message.data);
+//                JSONObject data = mainObject.getJSONObject("data");
+//
+//                String type = "";
+//                try{
+//                    JSONObject messageData = data.getJSONObject("card");
+//                    if (messageData != null){
+//                        type = messageData.getString("type");
+//                    }
+//                }catch (Exception e){
+//
+//                }
+//                JSONObject sender = mainObject.getJSONObject("sender");
+//                User u = new User(sender.getString("clientID"),sender.getString("name"),sender.getString("profilePictureURL"),false);
+//                final Message m = new Message(mainObject.getString("id"),u,null);
+//                if(type.equals("image")){
+//                    String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //data.getJSONObject("card").getJSONObject("payload").getString("url");
+//                    m.setText("sent an attachment");
+//                    m.setImage(new Message.Image(url));
+//                }else{
+//                    m.setText(data.getString("text"));
+//                }
+//
+//                JSONArray buttons = mainObject.getJSONArray("buttons");
+//
+//
+//                if (buttons != null){
+////                    showQuickReply(buttons);
+//                }
+//
+//                // Get a handler that can be used to post to the main thread
+//                Handler mainHandler = new Handler(Looper.getMainLooper());
+//                Runnable myRunnable = new Runnable() {
+//                    @Override
+//                    public void run() {messagesAdapter.addToStart(m,true);} // This is your code
+//                };
+//                mainHandler.post(myRunnable);
 
 
             }catch (Exception e){
-
+                Log.d("xxxxx","xxxx");
             }
         }
 
@@ -212,6 +228,111 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         public void onClosed(boolean willReconnect) {
             Log.v("SSE Closed", "reconnect? " + willReconnect);
         }
+    }
+
+    private void showMessages(List<CHMessageResponse> reponseMessages){
+        final ArrayList<Message> messages = new ArrayList<Message>();
+        CHMessageResponse latestMessage = null;
+        for (CHMessageResponse msg : reponseMessages) {
+
+            String pic = msg.getSender().getProfilePictureURL();
+            User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),pic,false);
+            Message m = new Message(msg.getID(),u,null);
+
+            if (msg.getData().getCard() != null){
+                //
+                String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //msg.getData().getCard().getPayload().getUrl();
+                m.setImage(new Message.Image(url));
+                m.setText("sent an attachment");
+            }else{
+                m.setText(msg.getData().getText());
+            }
+
+            latestMessage = msg;
+            messages.add(m);
+        }
+
+
+        if (latestMessage.getData().getButtons() != null){
+            showQuickReply(latestMessage.getData().getButtons());
+        }
+
+//        new Handler().postDelayed(new Runnable() { //imitation of internet connection
+//            @Override
+//            public void run() {
+//                messagesAdapter.addToEnd(messages, true);
+//            }
+//        }, 1000);
+
+
+        // Get a handler that can be used to post to the main thread
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+               if( messages.size() == 1){
+                   messagesAdapter.addToStart(messages.get(0),true);
+               }else{
+                   messagesAdapter.addToEnd(messages,true );
+               }
+
+            } // This is your code
+        };
+        mainHandler.post(myRunnable);
+    }
+
+
+
+    public void showQuickReply(final List<CHMessageResponse.CHMessageData.CHButton> buttons){
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                messageInput.getButton().setVisibility(View.GONE);
+                messageInput.getAttachmentButton().setVisibility(View.GONE);
+                messageInput.getInputEditText().setVisibility(View.GONE);
+
+                HorizontalScrollView sv= new HorizontalScrollView(activity);
+                sv.setLayoutParams(new ScrollView.LayoutParams(ScrollView.LayoutParams.WRAP_CONTENT,ScrollView.LayoutParams.WRAP_CONTENT));
+                messageInput.addView(sv,0);
+
+                LinearLayout layout = new LinearLayout(activity);
+                layout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT));
+                sv.addView(layout);
+
+                for (final CHMessageResponse.CHMessageData.CHButton button : buttons) {
+                    Button btnTag = new Button(activity);
+
+//            btnTag.setBackgroundColor(Color.parseColor(button.getBackgroundColor()));
+//            btnTag.setTextColor(Color.parseColor("#ffffff"));
+
+                    btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                    btnTag.setText(button.getTitle());
+//            btnTag.setId(i);
+                    btnTag.setOnClickListener(new View.OnClickListener() {
+                        public void onClick(View v) {
+                            // Perform action on click
+                            messageInput.getButton().setVisibility(View.VISIBLE);
+                            messageInput.getAttachmentButton().setVisibility(View.VISIBLE);
+                            messageInput.getInputEditText().setVisibility(View.VISIBLE);
+                            messageInput.removeViewAt(0);
+
+                            co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
+                            msg.setText(button.getTitle());
+                            CHClient.currentClient().sendMessage(activity,msg);
+                            User u = new User("","channel","imageProfile",false);
+                            Message m = new Message("messageID",u,button.getTitle());
+                            messagesAdapter.addToStart(m, true);
+                        }
+                    });
+                    layout.addView(btnTag, new ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+                }
+
+            }
+        });
+
+
     }
 
     public static Bitmap getBitmapFromURL(String src) {
@@ -267,35 +388,42 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         };
     }
 
+
+    //fetch complete
     public void complete(CHThreadResponse data){
-        final ArrayList<Message> messages = new ArrayList<Message>();
-        for (CHMessageResponse msg : data.getResult().getData().getMessages()) {
-            User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),msg.getSender().getProfilePictureURL(),false);
-            Message m = new Message(msg.getID(),u,null);
-
-            if (msg.getData().getCard() != null){
-                //
-                String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //msg.getData().getCard().getPayload().getUrl();
-                m.setImage(new Message.Image(url));
-                m.setText("sent an attachment");
-            }else{
-                m.setText(msg.getData().getText());
-            }
-
-            if (msg.getData().getButtons() != null){
-
-            }
-
-
-            messages.add(m);
-        }
-
-        new Handler().postDelayed(new Runnable() { //imitation of internet connection
-            @Override
-            public void run() {
-                messagesAdapter.addToEnd(messages, true);
-            }
-        }, 1000);
+        showMessages(data.getResult().getData().getMessages());
+//        final ArrayList<Message> messages = new ArrayList<Message>();
+//        CHMessageResponse latestMessage = null;
+//        for (CHMessageResponse msg : data.getResult().getData().getMessages()) {
+//
+//            String pic = msg.getSender().getProfilePictureURL();
+//            User u = new User(msg.getSender().getClientID(),msg.getSender().getName(),pic,false);
+//            Message m = new Message(msg.getID(),u,null);
+//
+//            if (msg.getData().getCard() != null){
+//                //
+//                String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //msg.getData().getCard().getPayload().getUrl();
+//                m.setImage(new Message.Image(url));
+//                m.setText("sent an attachment");
+//            }else{
+//                m.setText(msg.getData().getText());
+//            }
+//
+//            latestMessage = msg;
+//            messages.add(m);
+//        }
+//
+//
+//        if (latestMessage.getData().getButtons() != null){
+//            showQuickReply(latestMessage.getData().getButtons());
+//        }
+//
+//        new Handler().postDelayed(new Runnable() { //imitation of internet connection
+//            @Override
+//            public void run() {
+//                messagesAdapter.addToEnd(messages, true);
+//            }
+//        }, 1000);
     }
 
 
@@ -362,11 +490,9 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         initAdapter();
 
 
-        MessageInput input = (MessageInput) findViewById(R.id.input);
-        input.setInputListener(this);
-        input.setAttachmentsListener(this);
-
-
+        messageInput = (MessageInput) findViewById(R.id.input);
+        messageInput.setInputListener(this);
+        messageInput.setAttachmentsListener(this);
 
 
         Intent intent = getIntent();
