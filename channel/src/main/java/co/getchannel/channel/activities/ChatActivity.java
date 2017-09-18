@@ -117,10 +117,8 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
         msg.setText(input.toString());
         CHClient.currentClient().sendMessage(activity,msg);
-
-        User u = new User("","channel","imageProfile",false);
+        User u = new User(CHClient.currentClient().getClientID(),"channel","imageProfile",false);
         Message m = new Message("messageID",u,input.toString());
-        //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
         messagesAdapter.addToStart(m, true);
         return true;
     }
@@ -168,47 +166,8 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                 messages.add(msg);
                 showMessages(messages);
 
-//                JSONObject  mainObject = new JSONObject(message.data);
-//                JSONObject data = mainObject.getJSONObject("data");
-//
-//                String type = "";
-//                try{
-//                    JSONObject messageData = data.getJSONObject("card");
-//                    if (messageData != null){
-//                        type = messageData.getString("type");
-//                    }
-//                }catch (Exception e){
-//
-//                }
-//                JSONObject sender = mainObject.getJSONObject("sender");
-//                User u = new User(sender.getString("clientID"),sender.getString("name"),sender.getString("profilePictureURL"),false);
-//                final Message m = new Message(mainObject.getString("id"),u,null);
-//                if(type.equals("image")){
-//                    String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //data.getJSONObject("card").getJSONObject("payload").getString("url");
-//                    m.setText("sent an attachment");
-//                    m.setImage(new Message.Image(url));
-//                }else{
-//                    m.setText(data.getString("text"));
-//                }
-//
-//                JSONArray buttons = mainObject.getJSONArray("buttons");
-//
-//
-//                if (buttons != null){
-////                    showQuickReply(buttons);
-//                }
-//
-//                // Get a handler that can be used to post to the main thread
-//                Handler mainHandler = new Handler(Looper.getMainLooper());
-//                Runnable myRunnable = new Runnable() {
-//                    @Override
-//                    public void run() {messagesAdapter.addToStart(m,true);} // This is your code
-//                };
-//                mainHandler.post(myRunnable);
-
-
             }catch (Exception e){
-                Log.d("xxxxx","xxxx");
+
             }
         }
 
@@ -321,7 +280,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                             co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
                             msg.setText(button.getTitle());
                             CHClient.currentClient().sendMessage(activity,msg);
-                            User u = new User("","channel","imageProfile",false);
+                            User u = new User(CHClient.currentClient().getClientID(),"channel","imageProfile",false);
                             Message m = new Message("messageID",u,button.getTitle());
                             messagesAdapter.addToStart(m, true);
                         }
