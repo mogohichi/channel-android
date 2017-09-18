@@ -102,6 +102,10 @@ public class MessageInput extends RelativeLayout
         return messageSendButton;
     }
 
+    public ImageButton getAttachmentButton() {
+        return attachmentButton;
+    }
+
     @Override
     public void onClick(View view) {
         int id = view.getId();
