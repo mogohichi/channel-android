@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ParseException;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.ContextCompat;
@@ -272,24 +273,20 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                 sv.addView(layout);
 
                 for (final CHMessageResponse.CHMessageData.CHButton button : buttons) {
-                    Button btnTag = new Button(activity);
+                    final Button btnTag = new Button(activity);
                     int[][] states = new int[][] {
                             new int[] { android.R.attr.state_enabled}, // enabled
-//                            new int[] {-android.R.attr.state_enabled}, // disabled
-//                            new int[] {-android.R.attr.state_checked}, // unchecked
-//                            new int[] { android.R.attr.state_pressed}  // pressed
                     };
 
                     int[] colors = new int[] {
-                            Color.parseColor(button.getBackgroundColor()),
-//                            Color.RED,
-//                            Color.GREEN,
-//                            Color.BLUE
+                            button.getBackgroundColor() == null ? Color.parseColor("#0080FF") :
+                                    Color.parseColor(button.getBackgroundColor()),
                     };
 
                     ColorStateList myList = new ColorStateList(states, colors);
                     btnTag.setBackgroundTintList(myList);
-                    btnTag.setTextColor(Color.parseColor("#ffffff"));
+                    btnTag.setTextColor( button.getTextColor() == null ? Color.parseColor("#FFFFFF") :
+                            Color.parseColor(button.getTextColor()));
                     btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     btnTag.setText(button.getTitle());
                     //   btnTag.setId(i);
@@ -303,10 +300,30 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
                             co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
                             msg.setText(button.getTitle());
+                            msg.setPostback(button.getPayload() == null ? "" :button.getPayload());
                             CHClient.currentClient().sendMessage(activity,msg);
                             User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
                             Message m = new Message("messageID",u,button.getTitle());
                             messagesAdapter.addToStart(m, true);
+
+                            if (button.getType().equals("web_url")){
+                                String url = button.getUrl();
+                                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                                    url = "http://" + url;
+                                }
+                                final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                                activity.runOnUiThread(new Runnable() {
+                                                           @Override
+                                                           public void run() {
+                                                               startActivity(browserIntent);
+                                                           }
+                                                       });
+
+                            }
+
+
+
+
                         }
                     });
                     layout.addView(btnTag, new ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -323,7 +340,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         message.setImageData(data.getResult().getData().getUrl());
         CHClient.currentClient().sendImage(activity,message);
         User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
-        Message m = new Message("",u,"sent and attachment");
+        Message m = new Message("",u,"sent an attachment");
         m.setImage(new Message.Image(data.
                 getResult().getData().getUrl()));
         //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);

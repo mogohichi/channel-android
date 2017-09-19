@@ -7,6 +7,17 @@ package co.getchannel.channel.models.internal;
 public class Message {
     private String text;
     private Data data;
+    private Postback postback;
+
+    public Postback getPostback() {
+        return postback;
+    }
+
+    public void setPostback(String payload) {
+        Postback pb = new Postback();
+        pb.setPayload(payload);
+        this.postback = pb;
+    }
 
     public Data getData() {
         return data;
@@ -29,7 +40,17 @@ public class Message {
         this.text = text;
     }
 
+    private class Postback{
+        private String payload;
 
+        public String getPayload() {
+            return payload;
+        }
+
+        public void setPayload(String payload) {
+            this.payload = payload;
+        }
+    }
     private class Data{
 
         private Card card;
