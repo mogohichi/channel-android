@@ -1,6 +1,7 @@
 package co.getchannel.channel.activities;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -272,13 +273,26 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
                 for (final CHMessageResponse.CHMessageData.CHButton button : buttons) {
                     Button btnTag = new Button(activity);
+                    int[][] states = new int[][] {
+                            new int[] { android.R.attr.state_enabled}, // enabled
+//                            new int[] {-android.R.attr.state_enabled}, // disabled
+//                            new int[] {-android.R.attr.state_checked}, // unchecked
+//                            new int[] { android.R.attr.state_pressed}  // pressed
+                    };
 
-//            btnTag.setBackgroundColor(Color.parseColor(button.getBackgroundColor()));
-//            btnTag.setTextColor(Color.parseColor("#ffffff"));
+                    int[] colors = new int[] {
+                            Color.parseColor(button.getBackgroundColor()),
+//                            Color.RED,
+//                            Color.GREEN,
+//                            Color.BLUE
+                    };
 
+                    ColorStateList myList = new ColorStateList(states, colors);
+                    btnTag.setBackgroundTintList(myList);
+                    btnTag.setTextColor(Color.parseColor("#ffffff"));
                     btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     btnTag.setText(button.getTitle());
-//            btnTag.setId(i);
+                    //   btnTag.setId(i);
                     btnTag.setOnClickListener(new View.OnClickListener() {
                         public void onClick(View v) {
                             // Perform action on click
@@ -300,24 +314,6 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
             }
         });
-
-
-    }
-
-    public static Bitmap getBitmapFromURL(String src) {
-        try {
-//            src = src.replace("localhost", "10.0.2.2");
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            return myBitmap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     //upload complete
