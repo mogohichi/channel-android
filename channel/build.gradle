@@ -69,6 +69,7 @@ android {
 
 dependencies {
     compile project(':chatkit')
+    compile project(':dialog')
 
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -102,5 +103,7 @@ dependencies {
 
     //Utils
     compile "me.relex:circleindicator:1.2.2@aar"
+
+//    compile 'com.github.javiersantos:MaterialStyledDialogs:2.1'
 
 }

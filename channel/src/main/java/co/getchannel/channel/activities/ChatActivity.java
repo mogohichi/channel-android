@@ -1,14 +1,19 @@
 package co.getchannel.channel.activities;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.ParseException;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.StrictMode;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -16,16 +21,24 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 
+import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
+import com.github.javiersantos.materialstyleddialogs.enums.Style;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
@@ -100,6 +113,39 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     private EventSource eventSource;
 
+    Bitmap drawable_from_url(String url) throws java.net.MalformedURLException, java.io.IOException {
+        HttpURLConnection connection = (HttpURLConnection)new URL(url) .openConnection();
+        connection.setRequestProperty("User-agent","Mozilla/4.0");
+        connection.connect();
+        InputStream input = connection.getInputStream();
+        return BitmapFactory.decodeStream(input);
+    }
+
+    public static Bitmap getBitmapFromURL(String src) {
+        try {
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            // Log exception
+            return null;
+        }
+    }
+
+    public static Drawable LoadImageFromWebOperations(String url) {
+        try {
+            InputStream is = (InputStream) new URL(url).getContent();
+            Drawable d = Drawable.createFromStream(is, "cacheImageHeader");
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Override
     public void onSelectionChanged(int count) {
 
@@ -117,12 +163,64 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     @Override
     public boolean onSubmit(CharSequence input) {
-        co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
-        msg.setText(input.toString());
-        CHClient.currentClient().sendMessage(activity,msg);
-        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
-        Message m = new Message("messageID",u,input.toString());
-        messagesAdapter.addToStart(m, true);
+
+       Thread readThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+
+                    URL url = new URL("http://arewethereyetblog.net/wp-content/uploads/2014/08/4-3-dummy-image7-1024x768.jpg");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setDoInput(true);
+                    connection.connect();
+                    InputStream input = connection.getInputStream();
+                    Bitmap myBitmap = BitmapFactory.decodeStream(input);
+
+                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View customView = inflater.inflate(R.layout.custom_dialog, null);
+
+                    TextView customText = (TextView) customView.findViewById(R.id.custom_text_view);
+                    Button leftButton = (Button) customView.findViewById(R.id.left_button);
+                    Button rightButton = (Button) customView.findViewById(R.id.right_button);
+
+                    rightButton.setVisibility(View.GONE);
+
+                    Drawable d = new BitmapDrawable(getResources(),myBitmap);
+                    MaterialStyledDialog dialog =   new MaterialStyledDialog.Builder(activity)
+//                .setTitle("Awesome!")
+                            .setStyle(Style.HEADER_WITH_TITLE)
+//                            .setNegativeText("xxxx").setPositiveText("xxxx")
+//                             .setDescription("What can we improve? Your feedback is always welcome.")
+                             .setHeaderDrawable(d)
+                            .setCustomView(customView,20,20,20,20)
+                            .withDialogAnimation(true)
+                            .setHeaderScaleType(ImageView.ScaleType.FIT_CENTER).build();
+
+
+
+                    dialog.show();
+                //.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_launcher))
+
+                } catch(Exception e){
+                    Log.d("ddd","ddd");
+                }
+            }
+        });
+        readThread.run();
+
+
+
+
+
+
+
+
+//        co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
+//        msg.setText(input.toString());
+//        CHClient.currentClient().sendMessage(activity,msg);
+//        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
+//        Message m = new Message("messageID",u,input.toString());
+//        messagesAdapter.addToStart(m, true);
         return true;
     }
 
@@ -435,6 +533,11 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         activity = this;
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
 
         this.messagesList = (MessagesList) findViewById(R.id.messagesList);
         initAdapter();
