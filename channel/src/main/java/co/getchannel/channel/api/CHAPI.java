@@ -30,28 +30,6 @@ import static co.getchannel.channel.helpers.CHConstants.BASE_URL;
  */
 public class CHAPI {
 
-//    public static OkClient createClient(int readTimeout, TimeUnit readTimeoutUnit, int connectTimeout, TimeUnit connectTimeoutUnit)
-//    {
-//        final OkHttpClient okHttpClient = new OkHttpClient();
-//        okHttpClient.setReadTimeout(readTimeout, readTimeoutUnit);
-//        okHttpClient.setConnectTimeout(connectTimeout, connectTimeoutUnit);
-//
-//        try {
-//            URL url = new URL(ApiIntentService.getHostAddress());
-//            SSLSocketFactory NoSSLv3Factory = new NoSSLv3SocketFactory(url);
-//            okHttpClient.setSslSocketFactory(NoSSLv3Factory);
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return new OkClient(okHttpClient);
-//
-//    }
-
-
-
     public static Retrofit getAPIWithApplication() {
         OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
 
@@ -91,22 +69,6 @@ public class CHAPI {
                                                     .header("content-type","application/json")
                                                     .method(original.method(), original.body())
                                                     .build();
-
-//                                          Request request =
-//
-//                                                  CHClient.currentClient().getClientID().length() > 0 ?
-//                                                          original.newBuilder()
-//                                                              .header("X-Channel-Client-ID", CHClient.currentClient().getClientID())
-//                                                              .header("X-Channel-Application-Key", appKey)
-//                                                              .header("content-type","application/json")
-//                                                              .method(original.method(), original.body())
-//                                                              .build():
-//                                                          original.newBuilder()
-//                                                                  .header("X-Channel-Application-Key", appKey)
-//                                                                  .header("content-type","application/json")
-//                                                                  .method(original.method(), original.body())
-//                                                                  .build();
-
 
                                           return chain.proceed(request);
                                       }

@@ -1,5 +1,6 @@
 package co.getchannel.channel.api;
 
+import co.getchannel.channel.models.internal.ButtonData;
 import co.getchannel.channel.models.internal.Client;
 import co.getchannel.channel.models.internal.ImageData;
 import co.getchannel.channel.models.internal.Message;
@@ -8,12 +9,14 @@ import co.getchannel.channel.responses.CHApplicationInfoResponse;
 import co.getchannel.channel.responses.CHClientResponse;
 import co.getchannel.channel.responses.CHMessageImageResponse;
 import co.getchannel.channel.responses.CHMessageResponse;
+import co.getchannel.channel.responses.CHNotificationResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Path;
 
 /**
  * Created by Admin on 8/16/2017.
@@ -40,6 +43,14 @@ public interface CHAPIInterface {
     @POST("thread/messages")
     Call<CHMessageResponse> sendMessage(@Body Message data);
 
+
     @POST("thread/messages/upload")
     Call<CHMessageImageResponse> uploadMessageImage(@Body ImageData data);
+
+    @GET("notification")
+    Call<CHNotificationResponse> notification();
+
+    @POST("notification/{notificationID}")
+    Call<CHNotificationResponse> notificationAction(@Path("notificationID") String notificationID, @Body ButtonData data);
+
 }

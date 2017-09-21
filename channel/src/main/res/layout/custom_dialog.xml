@@ -7,7 +7,7 @@
 
     <TextView
         android:id="@+id/custom_text_view"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="100dp"
         android:text="This is a simple demonstration on how to add custom views to the MaterialStyledDialog" />
 
@@ -19,22 +19,25 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:orientation="vertical" >
+
             <LinearLayout
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="match_parent">
+
                 <Button
                     android:id="@+id/left_button"
-                    android:layout_weight="1"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_span="1"
+                    android:layout_weight="1"
                     android:text="left" />
+
                 <Button
                     android:id="@+id/right_button"
-                    android:layout_weight="1"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_span="1"
+                    android:layout_weight="1"
                     android:text="right" />
 
             </LinearLayout>

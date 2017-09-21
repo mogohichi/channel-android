@@ -29,9 +29,20 @@ import com.github.javiersantos.materialstyleddialogs.enums.Style;
 public class MaterialStyledDialog extends DialogBase {
     protected final Builder mBuilder;
 
+    private AppCompatImageView dialogHead;
+
+    public AppCompatImageView getDialogHead() {
+        return dialogHead;
+    }
+
+    public void setDialogHead(AppCompatImageView dialogHead) {
+        this.dialogHead = dialogHead;
+    }
+
     public final Builder getBuilder() {
         return mBuilder;
     }
+
 
     protected MaterialStyledDialog(Builder builder) {
         super(builder.context, R.style.MD_Dark);
@@ -126,6 +137,7 @@ public class MaterialStyledDialog extends DialogBase {
         FrameLayout dialogCustomViewGroup = (FrameLayout) contentView.findViewById(R.id.md_styled_dialog_custom_view);
         View dialogDivider = contentView.findViewById(R.id.md_styled_dialog_divider);
 
+        dialogHead = dialogHeader;
         // Set header color or drawable
         if (builder.headerDrawable != null) {
             dialogHeader.setImageDrawable(builder.headerDrawable);

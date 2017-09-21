@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String,String> userData =  new HashMap<String,String>();
         userData.put("name","John");
         userData.put("lastname","Snow");
-        Channel.setupActivityWithApplicationID(weakReference,"app_dK5cqQHzHiSYE6DfW7SfCUDemfj444LmEmow0OkpyUw",userID,userData);
+        Channel.setupActivityWithApplicationID(weakReference,"app_I8ggyuX6pnx3mlhjzRCMMClRkWwvhD2XKodKvq0tx2U",userID,userData);
 
 
         Button clickButton = (Button) findViewById(R.id.contactButton);
@@ -38,6 +38,16 @@ public class MainActivity extends AppCompatActivity {
                 userData.put("name","John");
                 userData.put("lastname","Snow");
                 Channel.chatViewWithUserID( userID, userData);
+
+            }
+        });
+
+        Button btn = (Button) findViewById(R.id.notifyButton);
+        final Activity thisActivity = this;
+        btn.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Channel.showLatestNotification(thisActivity);
 
             }
         });

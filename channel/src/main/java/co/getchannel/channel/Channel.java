@@ -76,4 +76,8 @@ public class Channel  {
         activity.startActivity(myIntent);
     }
 
+    public final static void showLatestNotification(final Activity activity){
+            CHClient.currentClient().checkNewNotification(activity);
+    }
+
 }

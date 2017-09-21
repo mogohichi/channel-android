@@ -72,6 +72,7 @@ import java.util.Map;
 import java.util.Random;
 
 import co.getchannel.channel.CHConfiguration;
+import co.getchannel.channel.callback.NotificationFetchComplete;
 import co.getchannel.channel.callback.SendMessageComplete;
 import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.R;
@@ -81,6 +82,7 @@ import co.getchannel.channel.models.CHClient;
 import co.getchannel.channel.models.ui.Message;
 import co.getchannel.channel.models.ui.User;
 import co.getchannel.channel.responses.CHMessageResponse;
+import co.getchannel.channel.responses.CHNotificationResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 import co.getchannel.channel.callback.UploadMessageImageComplete;
 import co.getchannel.channel.helpers.CHConstants;
@@ -91,7 +93,7 @@ import co.getchannel.channel.responses.CHThreadResponse;
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
 
-public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,UploadMessageImageComplete,com.stfalcon.chatkit.messages.MessagesListAdapter.SelectionListener,
+public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,UploadMessageImageComplete,NotificationFetchComplete,com.stfalcon.chatkit.messages.MessagesListAdapter.SelectionListener,
         com.stfalcon.chatkit.messages.MessagesListAdapter.OnLoadMoreListener,com.stfalcon.chatkit.messages.MessageInput.InputListener,
         com.stfalcon.chatkit.messages.MessageInput.AttachmentsListener  {
 
@@ -163,64 +165,20 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     @Override
     public boolean onSubmit(CharSequence input) {
+        co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
+        msg.setText(input.toString());
+        CHClient.currentClient().sendMessage(activity,msg);
+        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
+        final Message m = new Message("messageID",u,input.toString());
 
-       Thread readThread = new Thread(new Runnable() {
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        Runnable myRunnable = new Runnable() {
             @Override
             public void run() {
-                try{
-
-                    URL url = new URL("http://arewethereyetblog.net/wp-content/uploads/2014/08/4-3-dummy-image7-1024x768.jpg");
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    InputStream input = connection.getInputStream();
-                    Bitmap myBitmap = BitmapFactory.decodeStream(input);
-
-                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    View customView = inflater.inflate(R.layout.custom_dialog, null);
-
-                    TextView customText = (TextView) customView.findViewById(R.id.custom_text_view);
-                    Button leftButton = (Button) customView.findViewById(R.id.left_button);
-                    Button rightButton = (Button) customView.findViewById(R.id.right_button);
-
-                    rightButton.setVisibility(View.GONE);
-
-                    Drawable d = new BitmapDrawable(getResources(),myBitmap);
-                    MaterialStyledDialog dialog =   new MaterialStyledDialog.Builder(activity)
-//                .setTitle("Awesome!")
-                            .setStyle(Style.HEADER_WITH_TITLE)
-//                            .setNegativeText("xxxx").setPositiveText("xxxx")
-//                             .setDescription("What can we improve? Your feedback is always welcome.")
-                             .setHeaderDrawable(d)
-                            .setCustomView(customView,20,20,20,20)
-                            .withDialogAnimation(true)
-                            .setHeaderScaleType(ImageView.ScaleType.FIT_CENTER).build();
-
-
-
-                    dialog.show();
-                //.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_launcher))
-
-                } catch(Exception e){
-                    Log.d("ddd","ddd");
-                }
-            }
-        });
-        readThread.run();
-
-
-
-
-
-
-
-
-//        co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
-//        msg.setText(input.toString());
-//        CHClient.currentClient().sendMessage(activity,msg);
-//        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
-//        Message m = new Message("messageID",u,input.toString());
-//        messagesAdapter.addToStart(m, true);
+                messagesAdapter.addToStart(m, true);
+            } // This is your code
+        };
+        mainHandler.post(myRunnable);
         return true;
     }
 
@@ -321,9 +279,10 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             messages.add(m);
         }
 
-
-        if (latestMessage.getData().getButtons() != null){
-            showQuickReply(latestMessage.getData().getButtons());
+        if (latestMessage != null) {
+            if (latestMessage.getData().getButtons() != null) {
+                showQuickReply(latestMessage.getData().getButtons());
+            }
         }
 
 //        new Handler().postDelayed(new Runnable() { //imitation of internet connection
@@ -382,8 +341,9 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                     };
 
                     ColorStateList myList = new ColorStateList(states, colors);
+                    btnTag.setTransformationMethod(null);
                     btnTag.setBackgroundTintList(myList);
-                    btnTag.setTextColor( button.getTextColor() == null ? Color.parseColor("#FFFFFF") :
+                    btnTag.setTextColor(button.getTextColor() == null ? Color.parseColor("#FFFFFF") :
                             Color.parseColor(button.getTextColor()));
                     btnTag.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
                     btnTag.setText(button.getTitle());
@@ -437,17 +397,36 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
         message.setImageData(data.getResult().getData().getUrl());
         CHClient.currentClient().sendImage(activity,message);
+
+
+
         User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
-        Message m = new Message("",u,"sent an attachment");
+        final Message m = new Message("",u,"sent an attachment");
         m.setImage(new Message.Image(data.
                 getResult().getData().getUrl()));
         //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
-        messagesAdapter.addToStart(m, true);
 
+
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        Runnable myRunnable = new Runnable() {
+            @Override
+            public void run() {
+                messagesAdapter.addToStart(m, true);
+            } // This is your code
+        };
+        mainHandler.post(myRunnable);
+        CHMessageResponse msg = new CHMessageResponse();
     }
 
 
+    //sent message complete
     public void complete(CHMessageResponse data){
+
+    }
+
+    //fetch notification complete
+    public void complete(CHNotificationResponse data){
+
 
     }
 
@@ -555,5 +534,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         CHClient.activeThread(this);
 
         this.startEventSource();
+
+//        CHClient.currentClient().checkNewNotification(activity);
     }
 }
