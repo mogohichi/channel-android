@@ -115,39 +115,6 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     private EventSource eventSource;
 
-    Bitmap drawable_from_url(String url) throws java.net.MalformedURLException, java.io.IOException {
-        HttpURLConnection connection = (HttpURLConnection)new URL(url) .openConnection();
-        connection.setRequestProperty("User-agent","Mozilla/4.0");
-        connection.connect();
-        InputStream input = connection.getInputStream();
-        return BitmapFactory.decodeStream(input);
-    }
-
-    public static Bitmap getBitmapFromURL(String src) {
-        try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            return myBitmap;
-        } catch (IOException e) {
-            // Log exception
-            return null;
-        }
-    }
-
-    public static Drawable LoadImageFromWebOperations(String url) {
-        try {
-            InputStream is = (InputStream) new URL(url).getContent();
-            Drawable d = Drawable.createFromStream(is, "cacheImageHeader");
-            return d;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     @Override
     public void onSelectionChanged(int count) {
 
@@ -184,7 +151,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
 
     private void startEventSource() {
-        EventSource eventSource;
+
         Map<String,String> extraHeaderParameters = new HashMap<String,String>() ;
         String clientID = CHClient.currentClient().getClientID()==null?"":CHClient.currentClient().getClientID();
         String appID =  CHConfiguration.getApplicationId();
@@ -216,7 +183,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
         @Override
         public void onMessage(String event, MessageEvent message) {
-//            Log.v("SSE Message", event);
+            Log.v("SSE Message", event);
 //            Log.v("SSE Message: ", message.lastEventId);
 //            Log.v("SSE Message: ", message.data);
             try{
@@ -268,7 +235,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
             if (msg.getData().getCard() != null){
                 //
-                String url = "http://www.cinematografo.it/wp-content/uploads/2015/07/minions1.jpg"; //msg.getData().getCard().getPayload().getUrl();
+                String url = msg.getData().getCard().getPayload().getUrl();
                 m.setImage(new Message.Image(url));
                 m.setText("sent an attachment");
             }else{
@@ -378,10 +345,6 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                                                        });
 
                             }
-
-
-
-
                         }
                     });
                     layout.addView(btnTag, new ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -393,11 +356,10 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     //upload complete
     public void complete(CHMessageImageResponse data){
-        Log.d(CHConstants.kChannel_tag,data.getResult().getData().getUrl());
+        Log.d("sse",data.getResult().getData().getUrl());
         co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
         message.setImageData(data.getResult().getData().getUrl());
         CHClient.currentClient().sendImage(activity,message);
-
 
 
         User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
@@ -415,7 +377,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             } // This is your code
         };
         mainHandler.post(myRunnable);
-        CHMessageResponse msg = new CHMessageResponse();
+
     }
 
 
@@ -490,6 +452,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         EasyImage.handleActivityResult(requestCode, resultCode, data, this, new DefaultCallback() {
             @Override
             public void onImagePickerError(Exception e, EasyImage.ImageSource source, int type) {
@@ -500,12 +463,19 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             public void onImagePicked(File imageFile, EasyImage.ImageSource source, int type){
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
+                final Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
                 if(bitmap != null) {
                     CHClient.currentClient().uploadMessageImage(activity,toBase64(bitmap));
                 }
             }
         });
+    }
+    @Override
+    public void onStop () {
+        //do your stuff here
+//        this.stopEventSource();
+        super.onStop();
+
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {

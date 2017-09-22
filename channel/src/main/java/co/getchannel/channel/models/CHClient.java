@@ -309,7 +309,7 @@ public class CHClient {
                     final CHNotificationResponse data = response.body();
 
                     if (data.getResult().getData().getData() != null){
-                        final String cover = "http://arewethereyetblog.net/wp-content/uploads/2014/08/4-3-dummy-image7-1024x768.jpg";//data.getResult().getData().getData().getNotification().getPayload().getImageURL();
+                        final String cover = data.getResult().getData().getData().getNotification().getPayload().getImageURL();
                         final String title = data.getResult().getData().getData().getNotification().getPayload().getText();
                         Thread readThread = new Thread(new Runnable() {
                             @Override
