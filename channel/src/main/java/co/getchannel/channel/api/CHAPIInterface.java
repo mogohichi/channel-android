@@ -2,11 +2,13 @@ package co.getchannel.channel.api;
 
 import co.getchannel.channel.models.internal.ButtonData;
 import co.getchannel.channel.models.internal.Client;
+import co.getchannel.channel.models.internal.Device;
 import co.getchannel.channel.models.internal.ImageData;
 import co.getchannel.channel.models.internal.Message;
 import co.getchannel.channel.models.internal.MessageData;
 import co.getchannel.channel.responses.CHApplicationInfoResponse;
 import co.getchannel.channel.responses.CHClientResponse;
+import co.getchannel.channel.responses.CHEmptyResponse;
 import co.getchannel.channel.responses.CHMessageImageResponse;
 import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHNotificationResponse;
@@ -52,5 +54,8 @@ public interface CHAPIInterface {
 
     @POST("notification/{notificationID}")
     Call<CHNotificationResponse> notificationAction(@Path("notificationID") String notificationID, @Body ButtonData data);
+
+    @POST("client/device")
+    Call<CHEmptyResponse> saveDeviceToken(@Body Device device);
 
 }

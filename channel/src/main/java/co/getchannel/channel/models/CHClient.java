@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,11 +42,13 @@ import co.getchannel.channel.models.internal.Agent;
 import co.getchannel.channel.models.internal.Application;
 import co.getchannel.channel.models.internal.ButtonData;
 import co.getchannel.channel.models.internal.Client;
+import co.getchannel.channel.models.internal.Device;
 import co.getchannel.channel.models.internal.ImageData;
 import co.getchannel.channel.models.internal.Message;
 import co.getchannel.channel.models.internal.MessageData;
 import co.getchannel.channel.responses.CHApplicationInfoResponse;
 import co.getchannel.channel.responses.CHClientResponse;
+import co.getchannel.channel.responses.CHEmptyResponse;
 import co.getchannel.channel.responses.CHMessageImageResponse;
 import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHNotificationResponse;
@@ -416,6 +419,36 @@ public class CHClient {
 
             @Override
             public void onFailure(Call<CHNotificationResponse>call, Throwable t) {
+                // Log error here since request failed
+                Log.d(CHConstants.kChannel_tag,t.toString());
+            }
+        });
+    }
+
+    public static void saveDeviceToken(String token){
+        CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
+        Device device = new Device();
+        device.setToken(token);
+        HashMap<String,String> deviceInfo = new HashMap<String,String>();
+        deviceInfo.put("systemName","Android");
+        deviceInfo.put("systemsVersion", Build.VERSION.RELEASE);
+        deviceInfo.put("systemsAPILevel",android.os.Build.VERSION.SDK_INT + "");
+        deviceInfo.put("systemDeviceTypeFormatted",android.os.Build.DEVICE);
+        deviceInfo.put("deviceModel",android.os.Build.MODEL + " ("+ android.os.Build.PRODUCT + ")");
+        device.setInfo(deviceInfo);
+        Call<CHEmptyResponse> call = apiService.saveDeviceToken(device);
+        call.enqueue(new Callback<CHEmptyResponse>() {
+            @Override
+            public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {
+                if (response.code() == 200){
+
+                }else{
+                    Log.d(CHConstants.kChannel_tag, response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CHEmptyResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
             }

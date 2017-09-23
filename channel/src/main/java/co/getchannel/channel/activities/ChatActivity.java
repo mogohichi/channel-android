@@ -39,6 +39,7 @@ import android.widget.Toast;
 
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
 import com.github.javiersantos.materialstyleddialogs.enums.Style;
+
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
@@ -470,10 +471,18 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
             }
         });
     }
+
+    @Override
+    public void onDestroy () {
+        //do your stuff here
+        this.stopEventSource();
+        super.onDestroy();
+
+    }
+
     @Override
     public void onStop () {
         //do your stuff here
-//        this.stopEventSource();
         super.onStop();
 
     }
@@ -506,5 +515,8 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         this.startEventSource();
 
 //        CHClient.currentClient().checkNewNotification(activity);
+
+//        String token = FirebaseInstanceId.getInstance().getToken();
+//        Log.d("token",token);
     }
 }

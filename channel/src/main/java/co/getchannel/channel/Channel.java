@@ -80,4 +80,8 @@ public class Channel  {
             CHClient.currentClient().checkNewNotification(activity);
     }
 
+    public final static void saveDeviceToken(String token){
+        CHClient.currentClient().saveDeviceToken(token);
+    }
+
 }

@@ -104,6 +104,5 @@ dependencies {
     //Utils
     compile "me.relex:circleindicator:1.2.2@aar"
 
-//    compile 'com.github.javiersantos:MaterialStyledDialogs:2.1'
-
 }
+
