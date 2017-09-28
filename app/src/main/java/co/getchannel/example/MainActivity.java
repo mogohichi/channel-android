@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
         HashMap<String,String> userData =  new HashMap<String,String>();
         userData.put("name","John");
         userData.put("lastname","Snow");
-       Channel.setupActivityWithApplicationID(weakReference,"app_I8ggyuX6pnx3mlhjzRCMMClRkWwvhD2XKodKvq0tx2U",userID,userData);
-//        Channel.setupActivityWithApplicationID(weakReference,"app_wIuVonDdNZlrMmA46y4afe8Nmv0KWTzFycvdl0dLb3c",userID,userData);
+//       Channel.setupActivityWithApplicationID(weakReference,"app_I8ggyuX6pnx3mlhjzRCMMClRkWwvhD2XKodKvq0tx2U",userID,userData);
+        Channel.setupActivityWithApplicationID(weakReference,"app_wIuVonDdNZlrMmA46y4afe8Nmv0KWTzFycvdl0dLb3c",userID,userData);
 
         Button clickButton = (Button) findViewById(R.id.contactButton);
         clickButton.setOnClickListener( new View.OnClickListener() {
@@ -59,5 +59,6 @@ public class MainActivity extends AppCompatActivity {
         String token = FirebaseInstanceId.getInstance().getToken();
         Channel.saveDeviceToken(token);
         Log.d("firebase", "Token : " + token);
+
     }
 }

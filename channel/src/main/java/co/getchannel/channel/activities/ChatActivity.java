@@ -1,83 +1,50 @@
 package co.getchannel.channel.activities;
 
-import android.app.Activity;
-import android.content.Context;
+
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.ParseException;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-
-import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
-import com.github.javiersantos.materialstyleddialogs.enums.Style;
 
 import com.google.gson.Gson;
+import com.launchdarkly.eventsource.EventHandler;
 import com.squareup.picasso.Picasso;
 import com.stfalcon.chatkit.commons.ImageLoader;
 import com.stfalcon.chatkit.messages.MessageInput;
 import com.stfalcon.chatkit.messages.MessagesList;
 import com.stfalcon.chatkit.messages.MessagesListAdapter;
 
-//import com.mindorks.paracamera.Camera;
-
-import com.tylerjroach.eventsource.EventSource;
-import com.tylerjroach.eventsource.EventSourceHandler;
-import com.tylerjroach.eventsource.MessageEvent;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
 
 import co.getchannel.channel.CHConfiguration;
 import co.getchannel.channel.callback.NotificationFetchComplete;
 import co.getchannel.channel.callback.SendMessageComplete;
 import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.R;
-import co.getchannel.channel.common.data.MessagesFixtures;
 import co.getchannel.channel.helpers.CHConstants;
 import co.getchannel.channel.models.CHClient;
 import co.getchannel.channel.models.ui.Message;
@@ -86,22 +53,17 @@ import co.getchannel.channel.responses.CHMessageResponse;
 import co.getchannel.channel.responses.CHNotificationResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 import co.getchannel.channel.callback.UploadMessageImageComplete;
-import co.getchannel.channel.helpers.CHConstants;
-import co.getchannel.channel.models.CHClient;
 import co.getchannel.channel.responses.CHMessageImageResponse;
-import co.getchannel.channel.responses.CHMessageResponse;
-import co.getchannel.channel.responses.CHThreadResponse;
+
+import okhttp3.Headers;
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
+
 
 public class ChatActivity extends AppCompatActivity implements ThreadFetchComplete,SendMessageComplete,UploadMessageImageComplete,NotificationFetchComplete,com.stfalcon.chatkit.messages.MessagesListAdapter.SelectionListener,
         com.stfalcon.chatkit.messages.MessagesListAdapter.OnLoadMoreListener,com.stfalcon.chatkit.messages.MessageInput.InputListener,
         com.stfalcon.chatkit.messages.MessageInput.AttachmentsListener  {
 
-    private RecyclerView recyclerView;
-
-
-    private SSEHandler sseHandler = new SSEHandler();
     private ChatActivity activity;
     protected ImageLoader imageLoader;
     protected MessagesListAdapter<Message> messagesAdapter;
@@ -109,12 +71,43 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     private MessageInput messageInput;
 
 
-    private Menu menu;
-    private int selectionCount;
-    private Date lastLoadedDate;
 
+    private com.launchdarkly.eventsource.EventSource eventSource;
+    private EventHandler sseHandler = new EventHandler() {
+        @Override
+        public void onOpen() throws Exception {
+            Log.d("sse","onOpen");
+        }
 
-    private EventSource eventSource;
+        @Override
+        public void onClosed() throws Exception {
+            Log.d("sse","onClosed");
+        }
+
+        @Override
+        public void onMessage(String event, com.launchdarkly.eventsource.MessageEvent messageEvent) throws Exception {
+            Log.d("sse","onMessage");
+            try{
+                List<CHMessageResponse> messages = new ArrayList<CHMessageResponse>();
+                CHMessageResponse msg = new Gson().fromJson(messageEvent.getData(), CHMessageResponse.class);
+                messages.add(msg);
+                showMessages(messages);
+
+            }catch (Exception e){
+
+            }
+        }
+
+        @Override
+        public void onComment(String comment) throws Exception {
+            Log.d("sse","onComment");
+        }
+
+        @Override
+        public void onError(Throwable t) {
+            Log.d("sse","onError");
+        }
+    };
 
     @Override
     public void onSelectionChanged(int count) {
@@ -151,69 +144,39 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
     }
 
 
-    private void startEventSource() {
-
-        Map<String,String> extraHeaderParameters = new HashMap<String,String>() ;
-        String clientID = CHClient.currentClient().getClientID()==null?"":CHClient.currentClient().getClientID();
-        String appID =  CHConfiguration.getApplicationId();
-        extraHeaderParameters.put("X-Channel-Client-ID",clientID);
-        extraHeaderParameters.put("X-Channel-Application-Key",appID);
-        eventSource = new EventSource.Builder(CHConstants.BASE_URL + "subscribe")
-                .eventHandler(sseHandler)
-               .headers(extraHeaderParameters)
-                .build();
-        eventSource.connect();
-    }
 
     private void stopEventSource() {
-        if (eventSource != null)
-            eventSource.close();
-        sseHandler = null;
-    }
-
-
-    private class SSEHandler implements EventSourceHandler {
-
-        public SSEHandler() {
-        }
-
-        @Override
-        public void onConnect() {
-            Log.v("SSE Connected", "True");
-        }
-
-        @Override
-        public void onMessage(String event, MessageEvent message) {
-            Log.v("SSE Message", event);
-//            Log.v("SSE Message: ", message.lastEventId);
-//            Log.v("SSE Message: ", message.data);
+        if (eventSource != null){
             try{
-                List<CHMessageResponse> messages = new ArrayList<CHMessageResponse>();
-                CHMessageResponse msg = new Gson().fromJson(message.data, CHMessageResponse.class);
-                messages.add(msg);
-                showMessages(messages);
-
+                eventSource.close();
             }catch (Exception e){
 
             }
         }
 
-        @Override
-        public void onComment(String comment) {
-            //comments only received if exposeComments turned on
-            Log.v("SSE Comment", comment);
+        eventSource = null;
+    }
+
+    private void startEventSource() {
+
+        try{
+
+            String clientID = CHClient.currentClient().getClientID()==null?"":CHClient.currentClient().getClientID();
+            String appID =  CHConfiguration.getApplicationId();
+
+            String[] nameAndValues = {"X-Channel-Client-ID",clientID,"X-Channel-Application-Key",appID};
+
+            com.launchdarkly.eventsource.EventSource.Builder b
+                    = new com.launchdarkly.eventsource.EventSource.Builder(sseHandler, java.net.URI.create(CHConstants.BASE_URL + "subscribe"))
+                    .headers(Headers.of(nameAndValues));
+
+            eventSource = new com.launchdarkly.eventsource.EventSource(b);
+            eventSource.start();
+
+        }catch (Exception e){
+
         }
 
-        @Override
-        public void onError(Throwable t) {
-            Log.v("SSE Error", "");
-            //ignore ssl NPE on eventSource.close()
-        }
-
-        @Override
-        public void onClosed(boolean willReconnect) {
-            Log.v("SSE Closed", "reconnect? " + willReconnect);
-        }
     }
 
     private void showMessages(List<CHMessageResponse> reponseMessages){
@@ -357,7 +320,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     //upload complete
     public void complete(CHMessageImageResponse data){
-        Log.d("sse",data.getResult().getData().getUrl());
+
         co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
         message.setImageData(data.getResult().getData().getUrl());
         CHClient.currentClient().sendImage(activity,message);
@@ -514,9 +477,5 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
         this.startEventSource();
 
-//        CHClient.currentClient().checkNewNotification(activity);
-
-//        String token = FirebaseInstanceId.getInstance().getToken();
-//        Log.d("token",token);
     }
 }

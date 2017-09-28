@@ -10,8 +10,8 @@ public class CHEmptyResponse {
 
     @SerializedName("code")
     private int code;
-    @SerializedName("result")
-    private String result;
+//    @SerializedName("result")
+//    private String result;
 
     public int getCode() {
         return code;
@@ -21,11 +21,11 @@ public class CHEmptyResponse {
         this.code = code;
     }
 
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
+//    public String getResult() {
+//        return result;
+//    }
+//
+//    public void setResult(String result) {
+//        this.result = result;
+//    }
 }

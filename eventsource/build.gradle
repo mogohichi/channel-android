@@ -1,0 +1,105 @@
+//apply plugin: 'com.android.library'
+//apply plugin: 'com.github.dcendents.android-maven'
+//apply plugin: "com.jfrog.bintray"
+
+//android {
+//  compileSdkVersion 23
+//  buildToolsVersion "23.0.3"
+//
+//  defaultConfig {
+//    minSdkVersion 16
+//    targetSdkVersion 23
+//    versionCode 2
+//    versionName "1.2.11"
+//  }
+//  buildTypes {
+//    release {
+//      minifyEnabled false
+//      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+//    }
+//  }
+//}
+
+//dependencies {
+//  compile fileTree(dir: 'libs', include: ['*.jar'])
+//  compile 'org.jboss.netty:netty:3.2.10.Final'
+//}
+
+// group = 'com.tylerjroach'
+// version = '1.2.11'
+
+// Properties properties = new Properties()
+// properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+// install {
+//   repositories.mavenInstaller {
+//     pom.project {
+//       name 'eventsource-android'
+//       description 'An Android EventSource (SSE) Library'
+//       url 'https://github.com/tylerjroach/eventsource-android.git'
+//       inceptionYear '2015'
+
+//       packaging 'aar'
+//       groupId 'com.tylerjroach'
+//       artifactId 'eventsource'
+//       version '1.2.11'
+
+//       licenses {
+//         license {
+//           name 'The Apache Software License, Version 2.0'
+//           url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//           distribution 'repo'
+//         }
+//       }
+//       scm {
+//         connection 'https://github.com/tylerjroach/eventsource-android.git'
+//         url 'https://github.com/tylerjroach/eventsource-android'
+
+//       }
+//       developers {
+//         developer {
+//           name 'Tyler Roach'
+//         }
+//       }
+//     }
+//   }
+// }
+
+// bintray {
+//   user = properties.getProperty("bintray.user")
+//   key = properties.getProperty("bintray.apikey")
+//   configurations = ['archives']
+//   pkg {
+//     repo = 'maven'
+//     name = 'eventsource-android'
+//     userOrg = user
+//     licenses = ['Apache-2.0']
+//     vcsUrl = 'https://github.com/tylerjroach/eventsource-android.git'
+//     version {
+//       name = '1.2.11'
+//       desc = 'An Android EventSource (SSE) Library'
+//       vcsTag = '1.2.11'
+//     }
+//   }
+// }
+
+
+// task sourcesJar(type: Jar) {
+//   from android.sourceSets.main.java.srcDirs
+//   classifier = 'sources'
+// }
+
+// task javadoc(type: Javadoc) {
+//   source = android.sourceSets.main.java.srcDirs
+//   classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+// }
+
+// task javadocJar(type: Jar, dependsOn: javadoc) {
+//   classifier = 'javadoc'
+//   from javadoc.destinationDir
+// }
+
+// artifacts {
+//   archives javadocJar
+//   archives sourcesJar
+// }

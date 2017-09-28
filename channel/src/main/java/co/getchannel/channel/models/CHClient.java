@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import co.getchannel.channel.CHConfiguration;
 import co.getchannel.channel.Channel;
@@ -437,6 +438,28 @@ public class CHClient {
         deviceInfo.put("deviceModel",android.os.Build.MODEL + " ("+ android.os.Build.PRODUCT + ")");
         device.setInfo(deviceInfo);
         Call<CHEmptyResponse> call = apiService.saveDeviceToken(device);
+        call.enqueue(new Callback<CHEmptyResponse>() {
+            @Override
+            public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {
+                if (response.code() == 200){
+
+                }else{
+                    Log.d(CHConstants.kChannel_tag, response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CHEmptyResponse>call, Throwable t) {
+                // Log error here since request failed
+                Log.d(CHConstants.kChannel_tag,t.toString());
+            }
+        });
+    }
+
+    public static void postbackPushNotification(Map<String, String> data){
+
+        CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
+        Call<CHEmptyResponse> call = apiService.trackNotificationOpen(data.get("id"));
         call.enqueue(new Callback<CHEmptyResponse>() {
             @Override
             public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {

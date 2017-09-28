@@ -55,6 +55,9 @@ public interface CHAPIInterface {
     @POST("notification/{notificationID}")
     Call<CHNotificationResponse> notificationAction(@Path("notificationID") String notificationID, @Body ButtonData data);
 
+    @POST("notification/{notificationID}/open/push")
+    Call<CHEmptyResponse> trackNotificationOpen(@Path("notificationID") String notificationID);
+
     @POST("client/device")
     Call<CHEmptyResponse> saveDeviceToken(@Body Device device);
 
