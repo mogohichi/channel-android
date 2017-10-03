@@ -1,6 +1,6 @@
 # Channel SDK for Android
 
-[ ![Download Here]() ]()
+[ ![Download Here]() ](https://s3-us-west-2.amazonaws.com/co.getchannel.builds/android-sdk/channel.aar)
 
  Channel SDK is a library designed to simplify the development with our API.
  
@@ -34,3 +34,7 @@ allprojects {
     compile "com.github.siyamed:android-shape-imageview:0.9.3"
     compile "me.relex:circleindicator:1.2.2@aar"
 ```
+### 5.set up channel application key in your main activity
+ ```java
+  Channel.setupActivityWithApplicationID(new WeakReference<Activity>((Activity)this),"YOUR_APPLICAION_KEY",null,null);
+ ```
