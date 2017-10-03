@@ -6,8 +6,8 @@
  
  ## Setup SDK
  
- ###1.dowload our SDK to your library 
- ###2.add maven repositories and config library directory in your project build.gradle 
+ ### 1.dowload our SDK to your library 
+ ### 2.add maven repositories and config library directory in your project build.gradle 
    ```gradle
 allprojects {
     repositories {
@@ -17,12 +17,12 @@ allprojects {
     }
 }
 ```
- ###3.add dependencies to your project build.gradle
+ ### 3.add dependencies to your project build.gradle
   ```gradle
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
 ```
- ###4.add code below to your module build.gradle
+### 4.add code below to your module build.gradle
  ```gradle
     compile (name: 'channel-release', ext:'aar')
     compile 'com.github.jkwiecien:EasyImage:1.3.1'
