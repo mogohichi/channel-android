@@ -38,24 +38,24 @@ public class Channel  {
         return activity;
     }
 
-    public final static void setupActivityWithApplicationID(final WeakReference<Activity> mReference,String applicationID){
+    public final static void setupActivityWithApplicationKey(final WeakReference<Activity> mReference,String applicationID){
       Activity act = mReference.get();
         if (act != null) {
             activity = act;
-            setupWithApplicationID(applicationID,null,null);
+            setupWithApplicationKey(applicationID,null,null);
        }
         Log.d(kChannel_tag,CHConfiguration.getApplicationId());
     }
 
-    public final static void setupActivityWithApplicationID(final WeakReference<Activity> mReference,String applicationID,String userID,HashMap<String,String>userData){
+    public final static void setupActivityWithApplicationKey(final WeakReference<Activity> mReference,String applicationID,String userID,HashMap<String,String>userData){
         Activity act = mReference.get();
         if (act != null) {
             activity = act;
-           setupWithApplicationID(applicationID,userID,userData);
+           setupWithApplicationKey(applicationID,userID,userData);
         }
         Log.d(kChannel_tag,CHConfiguration.getApplicationId());
     }
-    public final static void setupWithApplicationID(String applicationId,String userID,HashMap<String,String>userData){
+    public final static void setupWithApplicationKey(String applicationId,String userID,HashMap<String,String>userData){
         CHConfiguration.setApplicationId(applicationId);
         if (userID != null){
             CHClient.currentClient().setUserID(userID);
