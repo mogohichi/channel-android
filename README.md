@@ -40,7 +40,8 @@ allprojects {
 
 ### 5. Setup Channel application key in your main activity
  ```java
-  Channel.setupActivityWithApplicationID(new WeakReference<Activity>((Activity)this),"YOUR_APPLICAION_KEY",null,null);
+  Channel.setupActivityWithApplicationID(new WeakReference<Activity>((Activity)this)
+  ,"YOUR_APPLICAION_KEY",null,null);
  ```
  
  ### 5. This is informations when opening the Channel chatview is required
