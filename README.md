@@ -6,8 +6,9 @@
  
  ## Setup SDK
  
- ### 1.dowload our SDK to your library 
- ### 2.add maven repositories and config library directory in your project build.gradle 
+ ### 1. Dowload our SDK to your library 
+ 
+ ### 2. Add maven repositories and config library directory in your project build.gradle 
    ```gradle
 allprojects {
     repositories {
@@ -17,12 +18,14 @@ allprojects {
     }
 }
 ```
- ### 3.add dependencies to your project build.gradle
+
+ ### 3. Add dependencies to your project build.gradle
   ```gradle
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
 ```
-### 4.add code below to your module build.gradle
+
+### 4. Add code below to your module build.gradle
  ```gradle
     compile (name: 'channel-release', ext:'aar')
     compile 'com.github.jkwiecien:EasyImage:1.3.1'
@@ -34,7 +37,16 @@ allprojects {
     compile "com.github.siyamed:android-shape-imageview:0.9.3"
     compile "me.relex:circleindicator:1.2.2@aar"
 ```
-### 5.set up channel application key in your main activity
+
+### 5. Setup Channel application key in your main activity
  ```java
   Channel.setupActivityWithApplicationID(new WeakReference<Activity>((Activity)this),"YOUR_APPLICAION_KEY",null,null);
+ ```
+ 
+ ### 5. This is informations when opening the Channel chatview is required
+ ```java
+                HashMap<String,String> yourClientData =  new HashMap<String,String>();
+                yourClientData.put("name","YOUR CLIENT NAME");
+                yourClientData.put("lastname","YOUR CLIENT LASTNAME");
+                Channel.chatViewWithUserID("YOUR_APP_USER_ID", userData);
  ```
