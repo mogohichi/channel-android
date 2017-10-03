@@ -27,7 +27,7 @@ allprojects {
 
 ### 4. Add code below to your module build.gradle
  ```gradle
-    compile (name: 'channel-release', ext:'aar')
+    compile (name: 'channel', ext:'aar')
     compile 'com.github.jkwiecien:EasyImage:1.3.1'
     compile 'com.afollestad.material-dialogs:core:0.9.0.2'
     compile "com.google.android:flexbox:0.2.5"
