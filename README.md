@@ -4,7 +4,7 @@
 
  Channel SDK is a library designed to simplify the development with our API.
  
- ## Setup SDK
+ ## How to
  
  ### 1. Dowload our SDK to your library 
  
@@ -50,3 +50,26 @@ allprojects {
                 yourClientData.put("lastname","YOUR CLIENT LASTNAME");
                 Channel.chatViewWithUserID("YOUR_APP_USER_ID", userData);
  ```
+ 
+  ### 6. Show Channel in-app notification
+ ```java
+                //send display target Activity
+                Channel.showLatestNotification(activity);
+ ```
+ 
+   ### 7. Register device token 
+ ```java
+                Channel.saveDeviceToken("DEVICE_TOKEN");
+ ```
+ 
+    ### 8. Send Firebase message to Channel for notification status tracking 
+ ```java
+   public class MyFirebaseMessagingService extends FirebaseMessagingService {
+       @Override
+       public void onMessageReceived(RemoteMessage remoteMessage) {
+           CHClient.currentClient().postbackPushNotification(remoteMessage.getData());
+       }
+   }
+ ```
+ 
+ 
