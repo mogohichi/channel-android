@@ -4,7 +4,7 @@
  
  ## How to use Channel SDK in your Android app
  
- #### 1. [ ![Download]() ](https://s3-us-west-2.amazonaws.com/co.getchannel.builds/android-sdk/channel.aar) our SDK to your library directory 
+ #### 1. Download our SDK from [Release](https://github.com/mogohichi/channel-android/releases) page
  
  #### 2. Add maven repositories and config library directory in your project build.gradle 
    ```gradle
@@ -19,8 +19,8 @@ allprojects {
 
  #### 3. Add dependencies to your project build.gradle
   ```gradle
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
+  classpath 'com.github.dcendents:android-maven-gradle-plugin:1.3'
+  classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.1'
 ```
 
 #### 4. Add code below to your module build.gradle
@@ -43,32 +43,32 @@ allprojects {
  
  #### 5. This is informations when opening the Channel chatview is required
  ```java
-                HashMap<String,String> yourClientData =  new HashMap<String,String>();
-                yourClientData.put("name","YOUR CLIENT NAME");
-                yourClientData.put("lastname","YOUR CLIENT LASTNAME");
-                Channel.chatViewWithUserID("YOUR_APP_USER_ID", userData);
+ HashMap<String,String> yourClientData =  new HashMap<String,String>();
+ yourClientData.put("name","YOUR CLIENT NAME");
+ yourClientData.put("lastname","YOUR CLIENT LASTNAME");
+ Channel.chatViewWithUserID("YOUR_APP_USER_ID", userData);
  ```
  
 #### 6. Show Channel in-app notification
  ```java
-                //send display target Activity
-                Channel.showLatestNotification(activity);
+ //send display target Activity
+ Channel.showLatestNotification(activity);
  ```
  
 #### 7. Register device token 
  ```java
-                Channel.saveDeviceToken("DEVICE_TOKEN");
+ Channel.saveDeviceToken("DEVICE_TOKEN");
  ```
  
 
 #### 8. Send Firebase message to Channel for notification status tracking 
  ```java
-   public class MyFirebaseMessagingService extends FirebaseMessagingService {
-       @Override
-       public void onMessageReceived(RemoteMessage remoteMessage) {
-           CHClient.currentClient().postbackPushNotification(remoteMessage.getData());
-       }
-   }
+public class MyFirebaseMessagingService extends FirebaseMessagingService {
+    @Override
+    public void onMessageReceived(RemoteMessage remoteMessage) {
+        CHClient.currentClient().postbackPushNotification(remoteMessage.getData());
+    }
+}
  ```
  
  
