@@ -4,7 +4,7 @@
  
  ## How to use Channel SDK in your Android app
  
- #### 1. [ ![Download Here]() ](https://s3-us-west-2.amazonaws.com/co.getchannel.builds/android-sdk/channel.aar) our SDK to your library directory 
+ #### 1. [ ![Download]() ](https://s3-us-west-2.amazonaws.com/co.getchannel.builds/android-sdk/channel.aar) our SDK to your library directory 
  
  #### 2. Add maven repositories and config library directory in your project build.gradle 
    ```gradle
