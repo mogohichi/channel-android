@@ -51,18 +51,19 @@ allprojects {
                 Channel.chatViewWithUserID("YOUR_APP_USER_ID", userData);
  ```
  
-  ### 6. Show Channel in-app notification
+### 6. Show Channel in-app notification
  ```java
                 //send display target Activity
                 Channel.showLatestNotification(activity);
  ```
  
-   ### 7. Register device token 
+### 7. Register device token 
  ```java
                 Channel.saveDeviceToken("DEVICE_TOKEN");
  ```
  
-    ### 8. Send Firebase message to Channel for notification status tracking 
+
+### 8. Send Firebase message to Channel for notification status tracking 
  ```java
    public class MyFirebaseMessagingService extends FirebaseMessagingService {
        @Override
