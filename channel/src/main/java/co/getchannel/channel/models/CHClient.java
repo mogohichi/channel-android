@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import co.getchannel.channel.CHConfiguration;
@@ -135,6 +136,22 @@ public class CHClient {
         });
     }
 
+    public static  HashMap<String,String> deviceInfo(){
+        Activity act = Channel.getActivity();
+        HashMap<String,String> deviceInfo = new HashMap<String,String>();
+        deviceInfo.put("OS Version",System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")");
+        deviceInfo.put("OS API Level",android.os.Build.VERSION.SDK_INT + "");
+        deviceInfo.put("Language", Locale.getDefault().getDisplayLanguage());
+        deviceInfo.put("Device",android.os.Build.DEVICE);
+        deviceInfo.put("ProcessName",act.getApplicationContext().getPackageName());
+        deviceInfo.put("SystemName","Android");
+        deviceInfo.put("SystemVersion", Build.VERSION.RELEASE);
+        deviceInfo.put("SystemAPILevel",android.os.Build.VERSION.SDK_INT + "");
+        deviceInfo.put("SystemDeviceTypeFormatted",android.os.Build.DEVICE);
+        deviceInfo.put("DeviceModel",android.os.Build.MODEL );
+        return  deviceInfo;
+    }
+
     public static void connectClientWithUserID(String userID,HashMap<String,String> userData){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Client client = new Client();
@@ -146,11 +163,7 @@ public class CHClient {
             client.setUserData(userData);
         }
         HashMap<String,String> deviceInfo = new HashMap<String,String>();
-        deviceInfo.put("OS Version",System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")");
-        deviceInfo.put("OS API Level",android.os.Build.VERSION.SDK_INT + "");
-        deviceInfo.put("Device",android.os.Build.DEVICE);
-        deviceInfo.put("Device",android.os.Build.MODEL + " ("+ android.os.Build.PRODUCT + ")");
-        client.setDeviceInfo(deviceInfo);
+        client.setDeviceInfo(CHClient.deviceInfo());
 
         Call<CHClientResponse> call = apiService.connectClient(client);
         call.enqueue(new Callback<CHClientResponse>() {
@@ -183,11 +196,7 @@ public class CHClient {
             client.setUserData(userData);
         }
         HashMap<String,String> deviceInfo = new HashMap<String,String>();
-        deviceInfo.put("OS Version",System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")");
-        deviceInfo.put("OS API Level",android.os.Build.VERSION.SDK_INT + "");
-        deviceInfo.put("Device",android.os.Build.DEVICE);
-        deviceInfo.put("Device",android.os.Build.MODEL + " ("+ android.os.Build.PRODUCT + ")");
-        client.setDeviceInfo(deviceInfo);
+        client.setDeviceInfo(CHClient.deviceInfo());
 
         Call<CHClientResponse> call = apiService.updateCllentData(client);
         call.enqueue(new Callback<CHClientResponse>() {
@@ -430,13 +439,8 @@ public class CHClient {
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Device device = new Device();
         device.setToken(token);
-        HashMap<String,String> deviceInfo = new HashMap<String,String>();
-        deviceInfo.put("systemName","Android");
-        deviceInfo.put("systemsVersion", Build.VERSION.RELEASE);
-        deviceInfo.put("systemsAPILevel",android.os.Build.VERSION.SDK_INT + "");
-        deviceInfo.put("systemDeviceTypeFormatted",android.os.Build.DEVICE);
-        deviceInfo.put("deviceModel",android.os.Build.MODEL + " ("+ android.os.Build.PRODUCT + ")");
-        device.setInfo(deviceInfo);
+        device.setInfo(CHClient.deviceInfo());
+
         Call<CHEmptyResponse> call = apiService.saveDeviceToken(device);
         call.enqueue(new Callback<CHEmptyResponse>() {
             @Override

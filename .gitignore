@@ -7,3 +7,6 @@
 /build
 /captures
 .externalNativeBuild
+/chatkit/build
+/dialog/build
+/sample/build
