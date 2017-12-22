@@ -25,12 +25,12 @@ public class MainActivity extends AppCompatActivity {
 //        Channel.setupActivityWithApplicationID(weakReference,"app_dK5cqQHzHiSYE6DfW7SfCUDemfj444LmEmow0OkpyUw");
 
 
-        String userID = "AppID";
+        String userID = "Tui_Test_SystemName3";
         HashMap<String,String> userData =  new HashMap<String,String>();
-        userData.put("name","John");
-        userData.put("lastname","Snow");
+        userData.put("name","Tui");
+        userData.put("lastname","Bombadua");
 //       Channel.setupActivityWithApplicationID(weakReference,"app_I8ggyuX6pnx3mlhjzRCMMClRkWwvhD2XKodKvq0tx2U",userID,userData);
-        Channel.setupActivityWithApplicationKey(weakReference,"app_wIuVonDdNZlrMmA46y4afe8Nmv0KWTzFycvdl0dLb3c",userID,userData);
+        Channel.setupActivityWithApplicationKey(weakReference,"app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw",userID,userData);
 
         Button clickButton = (Button) findViewById(R.id.contactButton);
         clickButton.setOnClickListener( new View.OnClickListener() {
@@ -56,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        String token = FirebaseInstanceId.getInstance().getToken();
-        Channel.saveDeviceToken(token);
-        Log.d("firebase", "Token : " + token);
+//        String token = FirebaseInstanceId.getInstance().getToken();
+//        Channel.saveDeviceToken(token);
+//        Log.d("firebase", "Token : " + token);
 
     }
 }
