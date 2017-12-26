@@ -1,6 +1,7 @@
 package co.getchannel.example;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,16 +21,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final Activity thisActivity = this;
         setContentView(R.layout.activity_main);
-        WeakReference<Activity> weakReference = new WeakReference<Activity>((Activity)this);
 
-        String userID = "Tui_Test_SystemName4";
-        HashMap<String,String> userData =  new HashMap<String,String>();
-        userData.put("name","Tui");
-        userData.put("lastname","Bombadua");
+        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(),"app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw");
+//        String userID = "Tui_Test_SystemName4";
+//        HashMap<String,String> userData =  new HashMap<String,String>();
+//        userData.put("name","Tui");
+//        userData.put("lastname","Bombadua");
+//                Channel.setupApplicationContextWithApplicationKey(this.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE)
+//              ,"app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw",userID,userData);
 
-       // Channel.setupActivityWithApplicationKey(weakReference,"app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw",userID,userData);
-        Channel.setupActivityWithApplicationKey(weakReference,"app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw");
 
         Button clickButton = (Button) findViewById(R.id.contactButton);
         clickButton.setOnClickListener( new View.OnClickListener() {
@@ -41,18 +43,18 @@ public class MainActivity extends AppCompatActivity {
 //                userData.put("name","John");
 //                userData.put("lastname","Snow");
 //                Channel.chatViewWithUserID( userID, userData);
-                Channel.chatView();
+                Channel.chatView(thisActivity);
 
             }
         });
 
         Button btn = (Button) findViewById(R.id.notifyButton);
-        final Activity thisActivity = this;
         btn.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Channel.subscribeToTopic("tui");
                 Channel.unsubscribeFromTopic("tui");
-//                Channel.showLatestNotification(thisActivity);
+                Channel.showLatestNotification(thisActivity);
             }
         });
 
