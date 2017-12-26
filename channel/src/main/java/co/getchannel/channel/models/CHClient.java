@@ -70,23 +70,15 @@ public class CHClient {
     }
 
     public static String getClientID() {
-        String clientID = "";
-        Activity act = Channel.getActivity();
-        if (act != null) {
-            SharedPreferences sharedPref = act.getPreferences(android.content.Context.MODE_PRIVATE);
-            clientID = sharedPref.getString("CH_CHANNEL_ID" + CHConfiguration.getApplicationId(),clientID);
-        }
-        return clientID;
+        SharedPreferences sharedPref = Channel.getSharedPreferences();
+        return sharedPref.getString("CH_CHANNEL_ID" + CHConfiguration.getApplicationId(),clientID);
     }
 
     public final static void setClientID(String clientID) {
-        Activity act = Channel.getActivity();
-        if (act != null) {
-            SharedPreferences sharedPref = act.getPreferences(android.content.Context.MODE_PRIVATE);
+            SharedPreferences sharedPref = Channel.getSharedPreferences();
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("CH_CHANNEL_ID" + CHConfiguration.getApplicationId(), clientID);
             editor.commit();
-        }
     }
 
 
@@ -133,13 +125,12 @@ public class CHClient {
     }
 
     public static  HashMap<String,String> deviceInfo(){
-        Activity act = Channel.getActivity();
         HashMap<String,String> deviceInfo = new HashMap<String,String>();
         deviceInfo.put("OS Version",System.getProperty("os.version") + "(" + android.os.Build.VERSION.INCREMENTAL + ")");
         deviceInfo.put("OS API Level",android.os.Build.VERSION.SDK_INT + "");
         deviceInfo.put("Language", Locale.getDefault().getDisplayLanguage());
         deviceInfo.put("Device",android.os.Build.DEVICE);
-        deviceInfo.put("ProcessName",act.getApplicationContext().getPackageName());
+        deviceInfo.put("ProcessName",Channel.getPackageName());
         deviceInfo.put("SystemName","Android");
         deviceInfo.put("SystemVersion", Build.VERSION.RELEASE);
         deviceInfo.put("SystemAPILevel",android.os.Build.VERSION.SDK_INT + "");

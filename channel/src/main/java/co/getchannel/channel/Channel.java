@@ -5,15 +5,14 @@ package co.getchannel.channel;
  */
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-
-import java.lang.ref.WeakReference;
+import android.content.SharedPreferences;
 import java.util.HashMap;
-
-
 import co.getchannel.channel.activities.ChatActivity;
 import co.getchannel.channel.models.CHClient;
 import co.getchannel.channel.callback.ChannelProcessComplete;
+
 
 public class Channel  {
 
@@ -28,27 +27,38 @@ public class Channel  {
         return channelInstance;
     }
 
-    public static Activity getActivity() {
-        return activity;
+    private static SharedPreferences sharedPreferences;
+    private static String packageName;
+
+    public static SharedPreferences getSharedPreferences() {
+        return sharedPreferences;
     }
 
-    public final static void setupActivityWithApplicationKey(final WeakReference<Activity> mReference,String applicationID){
-      Activity act = mReference.get();
-        if (act != null) {
-            activity = act;
-            setupWithApplicationKey(applicationID,null,null);
-       }
+    public static void setSharedPreferences(SharedPreferences sharedPreferences) {
+        Channel.sharedPreferences = sharedPreferences;
     }
 
-    public final static void setupActivityWithApplicationKey(final WeakReference<Activity> mReference,String applicationID,String userID,HashMap<String,String>userData){
-        Activity act = mReference.get();
-        if (act != null) {
-            activity = act;
-           setupWithApplicationKey(applicationID,userID,userData);
-        }
+    public static String getPackageName() {
+        return packageName;
     }
 
-   private static void setupWithApplicationKey(String applicationId,String userID,HashMap<String,String>userData){
+    public static void setPackageName(String packageName) {
+        Channel.packageName = packageName;
+    }
+
+    public final static void setupApplicationContextWithApplicationKey(Context context, String applicationID){
+        setPackageName(context.getPackageName());
+        setSharedPreferences(context.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE));
+        setupApplicationAndClient(applicationID,null,null);
+    }
+
+    public final static void setupApplicationContextWithApplicationKeyAndUser(Context context,String applicationID,String userID,HashMap<String,String>userData){
+        setPackageName(context.getPackageName());
+        setSharedPreferences(context.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE));
+        setupApplicationAndClient(applicationID,userID,userData);
+    }
+
+   private static void setupApplicationAndClient(String applicationId,String userID,HashMap<String,String>userData){
         CHConfiguration.setApplicationId(applicationId);
         CHClient.currentClient().setUserID(userID);
         CHClient.currentClient().setUserData(userData);
@@ -65,12 +75,12 @@ public class Channel  {
         });
     }
 
-    public final static void chatView(){
+    public final static void chatView(final Activity activity){
         Intent myIntent = new Intent(activity, ChatActivity.class);
         activity.startActivity(myIntent);
     }
 
-    public final static void chatViewWithUserID(String userID, HashMap<String,String> userData){
+    public final static void chatViewWithUserID(final Activity activity,String userID, HashMap<String,String> userData){
         Intent myIntent = new Intent(activity, ChatActivity.class);
         myIntent.putExtra("userData",userData);
         myIntent.putExtra("userID",userID);
