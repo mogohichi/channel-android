@@ -130,6 +130,7 @@ public class CHClient {
         deviceInfo.put("OS API Level",android.os.Build.VERSION.SDK_INT + "");
         deviceInfo.put("Language", Locale.getDefault().getDisplayLanguage());
         deviceInfo.put("Device",android.os.Build.DEVICE);
+        deviceInfo.put("ProcessName",Channel.getPackageName());
         deviceInfo.put("SystemName","Android");
         deviceInfo.put("SystemVersion", Build.VERSION.RELEASE);
         deviceInfo.put("SystemAPILevel",android.os.Build.VERSION.SDK_INT + "");
