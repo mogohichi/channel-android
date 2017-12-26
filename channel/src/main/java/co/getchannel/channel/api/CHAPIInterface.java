@@ -6,6 +6,7 @@ import co.getchannel.channel.models.internal.Device;
 import co.getchannel.channel.models.internal.ImageData;
 import co.getchannel.channel.models.internal.Message;
 import co.getchannel.channel.models.internal.MessageData;
+import co.getchannel.channel.models.internal.Topic;
 import co.getchannel.channel.responses.CHApplicationInfoResponse;
 import co.getchannel.channel.responses.CHClientResponse;
 import co.getchannel.channel.responses.CHEmptyResponse;
@@ -15,6 +16,7 @@ import co.getchannel.channel.responses.CHNotificationResponse;
 import co.getchannel.channel.responses.CHThreadResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -60,5 +62,11 @@ public interface CHAPIInterface {
 
     @POST("client/device")
     Call<CHEmptyResponse> saveDeviceToken(@Body Device device);
+
+    @POST("client/topics")
+    Call<CHEmptyResponse> subscribeToTopic(@Body Topic topic);
+
+    @DELETE("client/topics")
+    Call<CHEmptyResponse> unsubscribeFromTopic(@Body Topic topic);
 
 }

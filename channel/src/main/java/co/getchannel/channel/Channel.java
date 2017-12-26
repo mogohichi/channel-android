@@ -6,20 +6,17 @@ package co.getchannel.channel;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.Map;
 
 
 import co.getchannel.channel.activities.ChatActivity;
 import co.getchannel.channel.models.CHClient;
-
-import static co.getchannel.channel.helpers.CHConstants.kChannel_tag;
+import co.getchannel.channel.callback.ChannelProcessComplete;
 
 public class Channel  {
+
     private static Activity activity;
     private static Channel channelInstance = null; // the only instance of the class
     public static Channel getInstance()
@@ -29,9 +26,6 @@ public class Channel  {
             channelInstance = new Channel();
         }
         return channelInstance;
-    }
-    public final static void test(String applicationId){
-        Log.d(kChannel_tag,CHConfiguration.getApplicationId());
     }
 
     public static Activity getActivity() {
@@ -44,7 +38,6 @@ public class Channel  {
             activity = act;
             setupWithApplicationKey(applicationID,null,null);
        }
-        Log.d(kChannel_tag,CHConfiguration.getApplicationId());
     }
 
     public final static void setupActivityWithApplicationKey(final WeakReference<Activity> mReference,String applicationID,String userID,HashMap<String,String>userData){
@@ -53,21 +46,29 @@ public class Channel  {
             activity = act;
            setupWithApplicationKey(applicationID,userID,userData);
         }
-        Log.d(kChannel_tag,CHConfiguration.getApplicationId());
     }
-    public final static void setupWithApplicationKey(String applicationId,String userID,HashMap<String,String>userData){
+
+   private static void setupWithApplicationKey(String applicationId,String userID,HashMap<String,String>userData){
         CHConfiguration.setApplicationId(applicationId);
-        if (userID != null){
-            CHClient.currentClient().setUserID(userID);
+        CHClient.currentClient().setUserID(userID);
+        CHClient.currentClient().setUserData(userData);
+        CHClient.connectClientWithUserID(userID, userData, new ChannelProcessComplete() {
+            @Override
+            public void onSuccess() {
 
-        }
-        if(userData != null){
-            CHClient.currentClient().setUserData(userData);
-        }
+            }
 
-        CHClient.connectClientWithUserID(userID,userData);
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
     }
 
+    public final static void chatView(){
+        Intent myIntent = new Intent(activity, ChatActivity.class);
+        activity.startActivity(myIntent);
+    }
 
     public final static void chatViewWithUserID(String userID, HashMap<String,String> userData){
         Intent myIntent = new Intent(activity, ChatActivity.class);
@@ -77,11 +78,158 @@ public class Channel  {
     }
 
     public final static void showLatestNotification(final Activity activity){
-            CHClient.currentClient().checkNewNotification(activity);
+        if (CHClient.currentClient().getClientID().length() > 0) {
+            CHClient.currentClient().checkNewNotification(activity, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }else{
+            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+                    CHClient.currentClient().checkNewNotification(activity, new ChannelProcessComplete() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onFail(String message) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }
     }
 
     public final static void saveDeviceToken(String token){
-        CHClient.currentClient().saveDeviceToken(token);
+        final String thisToken = token;
+        if (CHClient.currentClient().getClientID().length() > 0) {
+            CHClient.currentClient().saveDeviceToken(token, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }else{
+            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+                    CHClient.currentClient().saveDeviceToken(thisToken, new ChannelProcessComplete() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onFail(String message) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }
+    }
+
+    public final static void subscribeToTopic(String topic){
+        final String thisTopic = topic;
+        if (CHClient.currentClient().getClientID().length() > 0) {
+            CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }else{
+            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+                    CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onFail(String message) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }
+    }
+
+    public final static void unsubscribeFromTopic(String topic){
+        final String thisTopic = topic;
+        if (CHClient.currentClient().getClientID().length() > 0) {
+            CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }else{
+            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+                    CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onFail(String message) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }
     }
 
 }
