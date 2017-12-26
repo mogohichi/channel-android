@@ -4,12 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,9 +17,6 @@ import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
 import com.github.javiersantos.materialstyleddialogs.enums.Style;
 import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -33,7 +25,7 @@ import java.util.Map;
 import co.getchannel.channel.CHConfiguration;
 import co.getchannel.channel.Channel;
 import co.getchannel.channel.R;
-import co.getchannel.channel.callback.NotificationFetchComplete;
+import co.getchannel.channel.callback.ChannelProcessComplete;
 import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.callback.SendMessageComplete;
 import co.getchannel.channel.callback.UploadMessageImageComplete;
@@ -48,6 +40,7 @@ import co.getchannel.channel.models.internal.Device;
 import co.getchannel.channel.models.internal.ImageData;
 import co.getchannel.channel.models.internal.Message;
 import co.getchannel.channel.models.internal.MessageData;
+import co.getchannel.channel.models.internal.Topic;
 import co.getchannel.channel.responses.CHApplicationInfoResponse;
 import co.getchannel.channel.responses.CHClientResponse;
 import co.getchannel.channel.responses.CHEmptyResponse;
@@ -113,7 +106,7 @@ public class CHClient {
         CHClient.userData = userData;
     }
 
-    public static void applicationInfo(){
+    public static void applicationInfo( final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Call<CHApplicationInfoResponse> call = apiService.getApplicationInfo();
         call.enqueue(new Callback<CHApplicationInfoResponse>() {
@@ -123,8 +116,10 @@ public class CHClient {
                     List<Agent> agents = response.body().getResult().getData().getAgents();
                     Application app = response.body().getResult().getData().getApplication();
                     Log.d(CHConstants.kChannel_tag,"Number of agent received: " + agents.size());
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -132,6 +127,7 @@ public class CHClient {
             public void onFailure(Call<CHApplicationInfoResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
@@ -152,7 +148,7 @@ public class CHClient {
         return  deviceInfo;
     }
 
-    public static void connectClientWithUserID(String userID,HashMap<String,String> userData){
+    public static void connectClientWithUserID(String userID,HashMap<String,String> userData, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Client client = new Client();
         if (userID != null){
@@ -166,14 +162,18 @@ public class CHClient {
         client.setDeviceInfo(CHClient.deviceInfo());
 
         Call<CHClientResponse> call = apiService.connectClient(client);
+
+
         call.enqueue(new Callback<CHClientResponse>() {
             @Override
             public void onResponse(Call<CHClientResponse> call, Response<CHClientResponse> response) {
                 if (response.code() == 200){
                     Log.d(CHConstants.kChannel_tag, response.body().getResult().getData().getClientID());
                     CHClient.currentClient().setClientID(response.body().getResult().getData().getClientID());
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -181,11 +181,12 @@ public class CHClient {
             public void onFailure(Call<CHClientResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
-    public static void updateClientData(String userID,HashMap<String,String> userData){
+    public static void updateClientData(String userID, HashMap<String,String> userData, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Client client = new Client();
         if (userID != null){
@@ -205,8 +206,10 @@ public class CHClient {
                 if (response.code() == 200){
                     Log.d(CHConstants.kChannel_tag, "updated " + response.body().getResult().getData().getClientID());
                     CHClient.currentClient().setClientID(response.body().getResult().getData().getClientID());
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -214,12 +217,13 @@ public class CHClient {
             public void onFailure(Call<CHClientResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
 
-    public static void activeThread(final ThreadFetchComplete fetchComplete){
+    public static void activeThread(final ThreadFetchComplete fetchComplete, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Call<CHThreadResponse> call = apiService.activeThread();
         call.enqueue(new Callback<CHThreadResponse>() {
@@ -229,8 +233,10 @@ public class CHClient {
                     Log.d(CHConstants.kChannel_tag, "activeThread " + response.body().getResult().getData());
                     fetchComplete.complete(response.body());
                     CHClient.currentClient().setClientID(response.body().getResult().getData().getClientID());
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -238,11 +244,12 @@ public class CHClient {
             public void onFailure(Call<CHThreadResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
-    public static void sendImage(final SendMessageComplete sentComplete, Message message){
+    public static void sendImage(final SendMessageComplete sentComplete, Message message, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Call<CHMessageResponse> call = apiService.sendMessage(message);
         call.enqueue(new Callback<CHMessageResponse>() {
@@ -251,8 +258,10 @@ public class CHClient {
                 if (response.code() == 200){
                     Log.d(CHConstants.kChannel_tag, "activeThread " + response.body());
                     sentComplete.complete(response.body());
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -260,10 +269,11 @@ public class CHClient {
             public void onFailure(Call<CHMessageResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
-    public static void sendMessage(final SendMessageComplete sentComplete, Message message){
+    public static void sendMessage(final SendMessageComplete sentComplete, Message message, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         MessageData md = new MessageData();
         md.setData(message);
@@ -274,8 +284,10 @@ public class CHClient {
                 if (response.code() == 200){
                     Log.d(CHConstants.kChannel_tag, "activeThread " + response.body());
                     sentComplete.complete(response.body());
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -283,11 +295,12 @@ public class CHClient {
             public void onFailure(Call<CHMessageResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
-    public static void uploadMessageImage(final UploadMessageImageComplete uploadComplete, String imageBase64){
+    public static void uploadMessageImage(final UploadMessageImageComplete uploadComplete, String imageBase64, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         ImageData img = new ImageData();
         img.setImageBase64(imageBase64);
@@ -297,8 +310,10 @@ public class CHClient {
             public void onResponse(Call<CHMessageImageResponse> call, Response<CHMessageImageResponse> response) {
                 if (response.code() == 200){
                     uploadComplete.complete(response.body());
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -306,11 +321,12 @@ public class CHClient {
             public void onFailure(Call<CHMessageImageResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
-    public static void checkNewNotification(final Activity activity){
+    public static void checkNewNotification(final Activity activity, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Call<CHNotificationResponse> call = apiService.notification();
         call.enqueue(new Callback<CHNotificationResponse>() {
@@ -368,8 +384,18 @@ public class CHClient {
                                     leftButton.setText(left.getTitle());
                                     leftButton.setOnClickListener(new View.OnClickListener() {
                                         public void onClick(View v) {
-                                            CHClient.currentClient().postbackNotification(data.getResult().getData().getPublicID(),left);
-                                            dialog.dismiss();
+                                            CHClient.currentClient().postbackNotification(data.getResult().getData().getPublicID(), left, new ChannelProcessComplete() {
+                                                @Override
+                                                public void onSuccess() {
+                                                    dialog.dismiss();
+                                                }
+
+                                                @Override
+                                                public void onFail(String message) {
+                                                    dialog.dismiss();
+                                                }
+                                            });
+
                                         }
                                     });
 
@@ -386,8 +412,17 @@ public class CHClient {
                                     rightButton.setText(right.getTitle());
                                     rightButton.setOnClickListener(new View.OnClickListener() {
                                         public void onClick(View v) {
-                                            CHClient.currentClient().postbackNotification(data.getResult().getData().getPublicID(),right);
-                                            dialog.dismiss();
+                                            CHClient.currentClient().postbackNotification(data.getResult().getData().getPublicID(), right, new ChannelProcessComplete() {
+                                                @Override
+                                                public void onSuccess() {
+                                                    dialog.dismiss();
+                                                }
+
+                                                @Override
+                                                public void onFail(String message) {
+                                                    dialog.dismiss();
+                                                }
+                                            });
                                         }
                                     });
                                 }
@@ -395,9 +430,11 @@ public class CHClient {
                             }
                         });
                         readThread.run();
+                        callback.onSuccess();
                     }
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -405,11 +442,12 @@ public class CHClient {
             public void onFailure(Call<CHNotificationResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
-    public static void postbackNotification(String notificationID,CHNotificationResponse.CHNotificationPayloadButton button){
+    public static void postbackNotification(String notificationID,CHNotificationResponse.CHNotificationPayloadButton button, final ChannelProcessComplete callback){
 
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
 
@@ -421,9 +459,10 @@ public class CHClient {
             @Override
             public void onResponse(Call<CHNotificationResponse> call, Response<CHNotificationResponse> response) {
                 if (response.code() == 200){
-
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -431,11 +470,12 @@ public class CHClient {
             public void onFailure(Call<CHNotificationResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
-    public static void saveDeviceToken(String token){
+    public static void saveDeviceToken(String token, final ChannelProcessComplete callback){
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Device device = new Device();
         device.setToken(token);
@@ -446,9 +486,10 @@ public class CHClient {
             @Override
             public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {
                 if (response.code() == 200){
-
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -456,11 +497,12 @@ public class CHClient {
             public void onFailure(Call<CHEmptyResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }
 
-    public static void postbackPushNotification(Map<String, String> data){
+    public static void postbackPushNotification(Map<String, String> data, final ChannelProcessComplete callback){
 
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Call<CHEmptyResponse> call = apiService.trackNotificationOpen(data.get("id"));
@@ -468,9 +510,10 @@ public class CHClient {
             @Override
             public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {
                 if (response.code() == 200){
-
+                    callback.onSuccess();
                 }else{
                     Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
                 }
             }
 
@@ -478,6 +521,58 @@ public class CHClient {
             public void onFailure(Call<CHEmptyResponse>call, Throwable t) {
                 // Log error here since request failed
                 Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
+            }
+        });
+    }
+
+
+    public static void subscribeToTopic(String topic, final ChannelProcessComplete callback){
+        CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
+        Topic subscribeTopic = new Topic();
+        subscribeTopic.setTopic(topic);
+        Call<CHEmptyResponse> call = apiService.subscribeToTopic(subscribeTopic);
+        call.enqueue(new Callback<CHEmptyResponse>() {
+            @Override
+            public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {
+                if (response.code() == 200){
+                    callback.onSuccess();
+                }else{
+                    Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CHEmptyResponse>call, Throwable t) {
+                // Log error here since request failed
+                Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
+            }
+        });
+    }
+
+    public static void unsubscribeFromTopic(String topic, final ChannelProcessComplete callback){
+        CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
+        Topic subscribeTopic = new Topic();
+        subscribeTopic.setTopic(topic);
+        Call<CHEmptyResponse> call = apiService.subscribeToTopic(subscribeTopic);
+        call.enqueue(new Callback<CHEmptyResponse>() {
+            @Override
+            public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {
+                if (response.code() == 200){
+                    callback.onSuccess();
+                }else{
+                    Log.d(CHConstants.kChannel_tag, response.message());
+                    callback.onFail(response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CHEmptyResponse>call, Throwable t) {
+                // Log error here since request failed
+                Log.d(CHConstants.kChannel_tag,t.toString());
+                callback.onFail(t.toString());
             }
         });
     }

@@ -47,6 +47,7 @@ import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.R;
 import co.getchannel.channel.helpers.CHConstants;
 import co.getchannel.channel.models.CHClient;
+import co.getchannel.channel.callback.ChannelProcessComplete;
 import co.getchannel.channel.models.ui.Message;
 import co.getchannel.channel.models.ui.User;
 import co.getchannel.channel.responses.CHMessageResponse;
@@ -126,20 +127,32 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     @Override
     public boolean onSubmit(CharSequence input) {
+        final String inputMessage = input.toString();
         co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
-        msg.setText(input.toString());
-        CHClient.currentClient().sendMessage(activity,msg);
-        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
-        final Message m = new Message("messageID",u,input.toString());
+        msg.setText(inputMessage);
 
-        Handler mainHandler = new Handler(Looper.getMainLooper());
-        Runnable myRunnable = new Runnable() {
+        CHClient.currentClient().sendMessage(activity, msg, new ChannelProcessComplete() {
             @Override
-            public void run() {
-                messagesAdapter.addToStart(m, true);
-            } // This is your code
-        };
-        mainHandler.post(myRunnable);
+            public void onSuccess() {
+                User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
+                final Message m = new Message("messageID",u,inputMessage);
+
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                Runnable myRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        messagesAdapter.addToStart(m, true);
+                    } // This is your code
+                };
+                mainHandler.post(myRunnable);
+
+            }
+
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
         return true;
     }
 
@@ -157,10 +170,9 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         eventSource = null;
     }
 
-    private void startEventSource() {
-
+    private void startSubscribe() {
         try{
-
+            //this subscribe find active thread id on server and subscibe it
             String clientID = CHClient.currentClient().getClientID()==null?"":CHClient.currentClient().getClientID();
             String appID =  CHConfiguration.getApplicationId();
 
@@ -215,14 +227,6 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                 showQuickReply(latestMessage.getData().getButtons());
             }
         }
-
-//        new Handler().postDelayed(new Runnable() { //imitation of internet connection
-//            @Override
-//            public void run() {
-//                messagesAdapter.addToEnd(messages, true);
-//            }
-//        }, 1000);
-
 
         // Get a handler that can be used to post to the main thread
         Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -290,25 +294,35 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                             co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
                             msg.setText(button.getTitle());
                             msg.setPostback(button.getPayload() == null ? "" :button.getPayload());
-                            CHClient.currentClient().sendMessage(activity,msg);
-                            User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
-                            Message m = new Message("messageID",u,button.getTitle());
-                            messagesAdapter.addToStart(m, true);
+                            CHClient.currentClient().sendMessage(activity, msg, new ChannelProcessComplete() {
+                                @Override
+                                public void onSuccess() {
+                                    User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
+                                    Message m = new Message("messageID",u,button.getTitle());
+                                    messagesAdapter.addToStart(m, true);
 
-                            if (button.getType().equals("web_url")){
-                                String url = button.getUrl();
-                                if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                                    url = "http://" + url;
+                                    if (button.getType().equals("web_url")){
+                                        String url = button.getUrl();
+                                        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                                            url = "http://" + url;
+                                        }
+                                        final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                                        activity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                startActivity(browserIntent);
+                                            }
+                                        });
+
+                                    }
                                 }
-                                final Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                                activity.runOnUiThread(new Runnable() {
-                                                           @Override
-                                                           public void run() {
-                                                               startActivity(browserIntent);
-                                                           }
-                                                       });
 
-                            }
+                                @Override
+                                public void onFail(String message) {
+
+                                }
+                            });
+
                         }
                     });
                     layout.addView(btnTag, new ViewGroup.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
@@ -320,30 +334,34 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     //upload complete
     public void complete(CHMessageImageResponse data){
-
+        final String imageData = data.getResult().getData().getUrl();
         co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
-        message.setImageData(data.getResult().getData().getUrl());
-        CHClient.currentClient().sendImage(activity,message);
-
-
-        User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
-        final Message m = new Message("",u,"sent an attachment");
-        m.setImage(new Message.Image(data.
-                getResult().getData().getUrl()));
-        //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
-
-
-        Handler mainHandler = new Handler(Looper.getMainLooper());
-        Runnable myRunnable = new Runnable() {
+        message.setImageData(imageData);
+        CHClient.currentClient().sendImage(activity, message, new ChannelProcessComplete() {
             @Override
-            public void run() {
-                messagesAdapter.addToStart(m, true);
-            } // This is your code
-        };
-        mainHandler.post(myRunnable);
+            public void onSuccess() {
+                User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
+                final Message m = new Message("",u,"sent an attachment");
+                m.setImage(new Message.Image(imageData));
+                //messagesAdapter.addToStart(MessagesFixtures.getTextMessage(input.toString()), true);
 
+
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                Runnable myRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        messagesAdapter.addToStart(m, true);
+                    } // This is your code
+                };
+                mainHandler.post(myRunnable);
+            }
+
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
     }
-
 
     //sent message complete
     public void complete(CHMessageResponse data){
@@ -352,7 +370,6 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
 
     //fetch notification complete
     public void complete(CHNotificationResponse data){
-
 
     }
 
@@ -391,17 +408,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         messagesAdapter = new MessagesListAdapter<>(CHClient.currentClient().getClientID(), imageLoader);
         messagesAdapter.enableSelectionMode(this);
         messagesAdapter.setLoadMoreListener(this);
-        messagesAdapter.registerViewClickListener(R.id.messageUserAvatar,
-                new MessagesListAdapter.OnMessageViewClickListener<Message>() {
-                    @Override
-                    public void onMessageViewClick(View view, Message message) {
-//                        AppUtils.showToast(DefaultMessagesActivity.this,
-//                                message.getUser().getName() + " avatar click",
-//                                false);
-                    }
-                });
         this.messagesList.setAdapter(messagesAdapter);
-
     }
 
 
@@ -429,7 +436,17 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                 final Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
                 if(bitmap != null) {
-                    CHClient.currentClient().uploadMessageImage(activity,toBase64(bitmap));
+                    CHClient.currentClient().uploadMessageImage(activity, toBase64(bitmap), new ChannelProcessComplete() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onFail(String message) {
+
+                        }
+                    });
                 }
             }
         });
@@ -463,19 +480,36 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         this.messagesList = (MessagesList) findViewById(R.id.messagesList);
         initAdapter();
 
-
         messageInput = (MessageInput) findViewById(R.id.input);
         messageInput.setInputListener(this);
         messageInput.setAttachmentsListener(this);
 
-
         Intent intent = getIntent();
-        HashMap<String, String> userData = (HashMap<String, String>)intent.getSerializableExtra("userData");
-        String userID = (String)intent.getSerializableExtra("userID");
-        CHClient.updateClientData(userID,userData);
-        CHClient.activeThread(this);
+        if (intent != null) {
+            HashMap<String, String> userData = (HashMap<String, String>)intent.getSerializableExtra("userData");
+            String userID = (String)intent.getSerializableExtra("userID");
+            CHClient.updateClientData(userID, userData, new ChannelProcessComplete() {
+                @Override
+                public void onSuccess() {
+                    CHClient.activeThread(activity, new ChannelProcessComplete() {
+                        @Override
+                        public void onSuccess() {
 
-        this.startEventSource();
+                        }
 
+                        @Override
+                        public void onFail(String message) {
+
+                        }
+                    });
+                }
+                @Override
+                public void onFail(String message) {
+
+                }
+            });
+        }
+
+        this.startSubscribe();
     }
 }
