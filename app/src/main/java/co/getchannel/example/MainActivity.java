@@ -11,6 +11,8 @@ import android.widget.Button;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import co.getchannel.channel.Channel;
+import co.getchannel.channel.callback.ChannelCallback;
+
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +26,17 @@ public class MainActivity extends AppCompatActivity {
         final Activity thisActivity = this;
         setContentView(R.layout.activity_main);
 
-        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(),"app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw");
+        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
 //        String userID = "Tui_Test_SystemName4";
 //        HashMap<String,String> userData =  new HashMap<String,String>();
 //        userData.put("name","Tui");
@@ -42,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 //                HashMap<String,String> userData =  new HashMap<String,String>();
 //                userData.put("name","John");
 //                userData.put("lastname","Snow");
-//                Channel.chatViewWithUserID( userID, userData);
+//                Channel.chatViewWithUserID(thisActivity, userID, userData);
                 Channel.chatView(thisActivity);
 
             }
@@ -52,9 +64,39 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.subscribeToTopic("tui");
-                Channel.unsubscribeFromTopic("tui");
-                Channel.showLatestNotification(thisActivity);
+                Channel.subscribeToTopic("tui", new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+
+                    }
+                });
+                Channel.unsubscribeFromTopic("tui", new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+
+                    }
+                });
+                Channel.showLatestNotification(thisActivity, new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+
+                    }
+                });
             }
         });
 

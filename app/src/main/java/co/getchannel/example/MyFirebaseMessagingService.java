@@ -11,6 +11,8 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
 
+import co.getchannel.channel.Channel;
+import co.getchannel.channel.callback.ChannelCallback;
 import co.getchannel.channel.models.CHClient;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
@@ -19,6 +21,18 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        //CHClient.currentClient().postbackPushNotification(remoteMessage.getData());
+
+        Channel.postbackPushNotification(remoteMessage.getData(), new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
+
     }
 }

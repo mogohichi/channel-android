@@ -38,7 +38,17 @@ allprojects {
 
 #### 5. Setup Channel application key in your main activity
  ```java
-  Channel.setupActivityWithApplicationKey(new WeakReference<Activity>((Activity)this),"YOUR_APPLICAION_KEY");
+  Channel.setupApplicationContextWithApplicationKey(<Your Application Context>, new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+				//place your code when success
+            }
+
+            @Override
+            public void onFail(String message) {
+				//Handle error with fail message
+            }
+        });
  ```
  
  #### 5. This is informations when opening the Channel chatview is required
@@ -46,18 +56,42 @@ allprojects {
  HashMap<String,String> yourClientData =  new HashMap<String,String>();
  yourClientData.put("name","YOUR CLIENT NAME");
  yourClientData.put("lastname","YOUR CLIENT LASTNAME");
- Channel.chatViewWithUserID("YOUR_APP_USER_ID", userData);
+ Channel.chatViewWithUserID(<Your Activity>,"YOUR_APP_USER_ID", userData);
+ ```
+ or
+  ```java
+ Channel.chatView(<Your Activity>);
  ```
  
 #### 6. Show Channel in-app notification
  ```java
  //send display target Activity
- Channel.showLatestNotification(activity);
+ Channel.showLatestNotification(activity, new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+				//place your code when success
+            }
+
+            @Override
+            public void onFail(String message) {
+				//Handle error with fail message
+            }
+        });
  ```
  
 #### 7. Register device token 
  ```java
- Channel.saveDeviceToken("DEVICE_TOKEN");
+ Channel.saveDeviceToken("DEVICE_TOKEN", new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+				//place your code when success
+            }
+
+            @Override
+            public void onFail(String message) {
+				//Handle error with fail message
+            }
+        });
  ```
  
 
@@ -66,7 +100,17 @@ allprojects {
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        CHClient.currentClient().postbackPushNotification(remoteMessage.getData());
+   Channel.postbackPushNotification(remoteMessage.getData(), new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+                //place your code when success
+            }
+
+            @Override
+            public void onFail(String message) {
+				//Handle error with fail message
+            }
+        });
     }
 }
  ```
