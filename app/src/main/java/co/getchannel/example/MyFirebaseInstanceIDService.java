@@ -11,6 +11,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
 import co.getchannel.channel.Channel;
+import co.getchannel.channel.callback.ChannelCallback;
 
 
 public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
@@ -25,6 +26,16 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     }
 
     private void sendRegistrationToServer(String token) {
-        Channel.saveDeviceToken(token);
+        Channel.saveDeviceToken(token, new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
     }
 }

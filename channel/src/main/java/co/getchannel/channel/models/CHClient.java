@@ -470,7 +470,14 @@ public class CHClient {
         CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
         Device device = new Device();
         device.setToken(token);
-        device.setInfo(CHClient.deviceInfo());
+
+        HashMap<String, String> deviceInfo = new HashMap<String, String>();
+        deviceInfo.put("systemName","Android");
+        deviceInfo.put("systemVersion", Build.VERSION.RELEASE);
+        deviceInfo.put("systemAPILevel",android.os.Build.VERSION.SDK_INT + "");
+        deviceInfo.put("systemDeviceTypeFormatted",android.os.Build.DEVICE);
+        device.setInfo(deviceInfo);
+
 
         Call<CHEmptyResponse> call = apiService.saveDeviceToken(device);
         call.enqueue(new Callback<CHEmptyResponse>() {
