@@ -29,7 +29,18 @@ public class MainActivity extends AppCompatActivity {
         Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
             @Override
             public void onSuccess() {
+                String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+                Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
 
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+
+                    }
+                });
             }
 
             @Override
@@ -100,9 +111,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        String token = FirebaseInstanceId.getInstance().getToken();
-//        Channel.saveDeviceToken(token);
-//        Log.d("firebase", "Token : " + token);
+
 
     }
 }

@@ -79,20 +79,72 @@ public class Channel  {
     }
 
     public final static void chatView(final Activity activity){
+        if (CHClient.currentClient() == null){
+            return;
+        }
+        if (CHClient.currentClient().getClientID() == null){
+            return;
+        }
+
+        if (CHClient.currentClient().getClientID().length() == 0){
+            return;
+        }
+
+        if (CHConfiguration.getApplicationId() == null){
+            return;
+        }
+
+        if (CHConfiguration.getApplicationId().length() == 0 ){
+            return;
+        }
+
         Intent myIntent = new Intent(activity, ChatActivity.class);
-        activity.startActivity(myIntent);
+           activity.startActivity(myIntent);
+
     }
 
     public final static void chatViewWithUserID(final Activity activity,String userID, HashMap<String,String> userData){
+        if (CHClient.currentClient() == null){
+            return;
+        }
+        if (CHClient.currentClient().getClientID() == null){
+            return;
+        }
+
+        if (CHClient.currentClient().getClientID().length() == 0){
+            return;
+        }
+
+        if (CHConfiguration.getApplicationId() == null){
+            return;
+        }
+
+        if (CHConfiguration.getApplicationId().length() == 0 ){
+            return;
+        }
+
         Intent myIntent = new Intent(activity, ChatActivity.class);
-        myIntent.putExtra("userData",userData);
-        myIntent.putExtra("userID",userID);
+        myIntent.putExtra("userData", userData);
+        myIntent.putExtra("userID", userID);
         activity.startActivity(myIntent);
     }
 
     public final static void showLatestNotification(final Activity activity, final ChannelCallback callback){
-        if (CHClient.currentClient().getClientID().length() > 0) {
-            CHClient.currentClient().checkNewNotification(activity, new ChannelProcessComplete() {
+        if (CHClient.currentClient() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+        if (CHClient.currentClient().getClientID() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        if (CHClient.currentClient().getClientID().length() == 0){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        CHClient.currentClient().checkNewNotification(activity, new ChannelProcessComplete() {
                 @Override
                 public void onSuccess() {
                     callback.onSuccess();
@@ -103,35 +155,26 @@ public class Channel  {
                     callback.onFail(message);
                 }
             });
-        }else{
-            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    CHClient.currentClient().checkNewNotification(activity, new ChannelProcessComplete() {
-                        @Override
-                        public void onSuccess() {
-                            callback.onSuccess();
-                        }
 
-                        @Override
-                        public void onFail(String message) {
-                            callback.onFail(message);
-                        }
-                    });
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
-        }
     }
 
     public final static void saveDeviceToken(String token, final ChannelCallback callback){
-        final String thisToken = token;
-        if (CHClient.currentClient().getClientID().length() > 0) {
-            CHClient.currentClient().saveDeviceToken(token, new ChannelProcessComplete() {
+
+        if (CHClient.currentClient() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+        if (CHClient.currentClient().getClientID() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        if (CHClient.currentClient().getClientID().length() == 0){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+         CHClient.currentClient().saveDeviceToken(token, new ChannelProcessComplete() {
                 @Override
                 public void onSuccess() {
                     callback.onSuccess();
@@ -141,36 +184,26 @@ public class Channel  {
                 public void onFail(String message) {
                     callback.onFail(message);
                 }
-            });
-        }else{
-            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    CHClient.currentClient().saveDeviceToken(thisToken, new ChannelProcessComplete() {
-                        @Override
-                        public void onSuccess() {
-                            callback.onSuccess();
-                        }
+         });
 
-                        @Override
-                        public void onFail(String message) {
-                            callback.onFail(message);
-                        }
-                    });
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
-        }
     }
 
     public final static void subscribeToTopic(String topic, final ChannelCallback callback){
-        final String thisTopic = topic;
-        if (CHClient.currentClient().getClientID().length() > 0) {
-            CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
+        if (CHClient.currentClient() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+        if (CHClient.currentClient().getClientID() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        if (CHClient.currentClient().getClientID().length() == 0){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        CHClient.currentClient().subscribeToTopic(topic, new ChannelProcessComplete() {
                 @Override
                 public void onSuccess() {
                     callback.onSuccess();
@@ -180,36 +213,26 @@ public class Channel  {
                 public void onFail(String message) {
                     callback.onFail(message);
                 }
-            });
-        }else{
-            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
-                        @Override
-                        public void onSuccess() {
-                            callback.onSuccess();
-                        }
+        });
 
-                        @Override
-                        public void onFail(String message) {
-                            callback.onFail(message);
-                        }
-                    });
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
-        }
     }
 
     public final static void unsubscribeFromTopic(String topic, final ChannelCallback callback){
-        final String thisTopic = topic;
-        if (CHClient.currentClient().getClientID().length() > 0) {
-            CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
+        if (CHClient.currentClient() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+        if (CHClient.currentClient().getClientID() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        if (CHClient.currentClient().getClientID().length() == 0){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        CHClient.currentClient().subscribeToTopic(topic, new ChannelProcessComplete() {
                 @Override
                 public void onSuccess() {
                     callback.onSuccess();
@@ -219,44 +242,36 @@ public class Channel  {
                 public void onFail(String message) {
                     callback.onFail(message);
                 }
-            });
-        }else{
-            CHClient.connectClientWithUserID(null, null, new ChannelProcessComplete() {
+        });
+
+    }
+
+    public final static void postbackPushNotification(Map<String, String> data, final ChannelCallback callback) {
+        if (CHClient.currentClient() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+        if (CHClient.currentClient().getClientID() == null){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        if (CHClient.currentClient().getClientID().length() == 0){
+            callback.onFail("Current client not found");
+            return;
+        }
+
+        CHClient.currentClient().postbackPushNotification(data, new ChannelProcessComplete() {
                 @Override
                 public void onSuccess() {
-                    CHClient.currentClient().subscribeToTopic(thisTopic, new ChannelProcessComplete() {
-                        @Override
-                        public void onSuccess() {
-                            callback.onSuccess();
-                        }
-
-                        @Override
-                        public void onFail(String message) {
-                            callback.onFail(message);
-                        }
-                    });
+                    callback.onSuccess();
                 }
 
                 @Override
                 public void onFail(String message) {
                     callback.onFail(message);
                 }
-            });
-        }
-    }
-
-    public final static void postbackPushNotification(Map<String, String> data, final ChannelCallback callback){
-        CHClient.currentClient().postbackPushNotification(data, new ChannelProcessComplete() {
-            @Override
-            public void onSuccess() {
-                callback.onSuccess();
-            }
-
-            @Override
-            public void onFail(String message) {
-                callback.onFail(message);
-            }
         });
-    }
 
+    }
 }

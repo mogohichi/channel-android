@@ -58,9 +58,9 @@ import retrofit2.Response;
  */
 
 public class CHClient {
-    public static String clientID;
-    public static String userID;
-    public static HashMap<String,String> userData;
+    public static String _clientID;
+    public static String _userID;
+    public static HashMap<String,String> _userData;
     private static CHClient _client = null;
     public static CHClient currentClient()
     {
@@ -70,32 +70,48 @@ public class CHClient {
     }
 
     public static String getClientID() {
-        SharedPreferences sharedPref = Channel.getSharedPreferences();
-        return sharedPref.getString("CH_CHANNEL_ID" + CHConfiguration.getApplicationId(),clientID);
+        try {
+            if (_clientID != null)
+                if (_clientID.length() > 0)
+                    return _clientID;
+
+            SharedPreferences sharedPref = Channel.getSharedPreferences();
+            _clientID = sharedPref.getString("CH_CHANNEL_ID" + CHConfiguration.getApplicationId(),"");
+            return _clientID;
+        }catch (Exception e) {
+            Log.d(CHConstants.kChannel_tag, e.getMessage());
+            String t =  e.getMessage();
+            return "";
+        }
     }
 
     public final static void setClientID(String clientID) {
+        try {
+            _clientID = clientID;
             SharedPreferences sharedPref = Channel.getSharedPreferences();
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString("CH_CHANNEL_ID" + CHConfiguration.getApplicationId(), clientID);
             editor.commit();
+        }catch (Exception e) {
+            Log.d(CHConstants.kChannel_tag, e.getMessage());
+        }
     }
 
 
     public static String getUserID() {
-        return userID;
+        return _userID;
     }
 
     public static void setUserID(String userID) {
-        CHClient.userID = userID;
+        _userID = userID;
     }
 
     public static HashMap<String, String> getUserData() {
-        return userData;
+        return _userData;
     }
 
     public static void setUserData(HashMap<String, String> userData) {
-        CHClient.userData = userData;
+        _userData = userData;
     }
 
     public static void applicationInfo( final ChannelProcessComplete callback){
