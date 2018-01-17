@@ -494,7 +494,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                     CHClient.activeThread(activity, new ChannelProcessComplete() {
                         @Override
                         public void onSuccess() {
-
+                            initAdapter();
                         }
 
                         @Override

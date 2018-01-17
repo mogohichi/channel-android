@@ -26,16 +26,16 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     }
 
     private void sendRegistrationToServer(String token) {
-        Channel.saveDeviceToken(token, new ChannelCallback() {
-            @Override
-            public void onSuccess() {
-
-            }
-
-            @Override
-            public void onFail(String message) {
-
-            }
-        });
+//        Channel.saveDeviceToken(token, new ChannelCallback() {
+//            @Override
+//            public void onSuccess() {
+//
+//            }
+//
+//            @Override
+//            public void onFail(String message) {
+//
+//            }
+//        });
     }
 }
