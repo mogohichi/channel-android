@@ -27,7 +27,34 @@ public class MainActivity extends AppCompatActivity {
         final Activity thisActivity = this;
         setContentView(R.layout.activity_main);
 
-        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
+//        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
+//            @Override
+//            public void onSuccess() {
+//                final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+//                Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
+//                    @Override
+//                    public void onSuccess() {
+//                        Log.d("Example","notifyButton success");
+//                    }
+//
+//                    @Override
+//                    public void onFail(String message) {
+//                        Log.d("Example","notifyButton fail");
+//                    }
+//                });
+//            }
+//
+//            @Override
+//            public void onFail(String message) {
+//
+//            }
+//        });
+
+        String userID = "Tui_Test_SystemName4";
+        HashMap<String,String> userData =  new HashMap<String,String>();
+        userData.put("name","Tui");
+        userData.put("lastname","Bombadua");
+        Channel.setupApplicationContextWithApplicationKeyAndUser(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", userID, userData, new ChannelCallback() {
             @Override
             public void onSuccess() {
                 final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
@@ -49,12 +76,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-//        String userID = "Tui_Test_SystemName4";
-//        HashMap<String,String> userData =  new HashMap<String,String>();
-//        userData.put("name","Tui");
-//        userData.put("lastname","Bombadua");
-//                Channel.setupApplicationContextWithApplicationKey(this.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE)
-//              ,"app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw",userID,userData);
 
 
         Button clickButton = (Button) findViewById(R.id.contactButton);
@@ -62,12 +83,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
-//                String userID = "AppID";
-//                HashMap<String,String> userData =  new HashMap<String,String>();
-//                userData.put("name","John");
-//                userData.put("lastname","Snow");
-//                Channel.chatViewWithUserID(thisActivity, userID, userData);
-                Channel.chatView(thisActivity);
+                String userID = "Tui_Test_SystemName5";
+                HashMap<String,String> userData =  new HashMap<String,String>();
+                userData.put("name","John");
+                userData.put("lastname","Snow");
+                Channel.chatViewWithUserID(thisActivity, userID, userData);
+//               Channel.chatView(thisActivity);
 
             }
         });

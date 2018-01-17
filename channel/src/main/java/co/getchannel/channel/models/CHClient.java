@@ -255,8 +255,8 @@ public class CHClient {
                 public void onResponse(Call<CHThreadResponse> call, Response<CHThreadResponse> response) {
                     if (response.code() == 200) {
                         Log.d(CHConstants.kChannel_tag, "activeThread " + response.body().getResult().getData());
-                        fetchComplete.complete(response.body());
                         CHClient.currentClient().setClientID(response.body().getResult().getData().getClientID());
+                        fetchComplete.complete(response.body());
                         callback.onSuccess();
                     } else {
                         Log.d(CHConstants.kChannel_tag, response.message());
@@ -387,34 +387,34 @@ public class CHClient {
                             Thread readThread = new Thread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    try {
 
-                                    LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                                    View customView = inflater.inflate(R.layout.custom_dialog, null);
+                                        LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                                        View customView = inflater.inflate(R.layout.custom_dialog, null);
 
-                                    TextView customText = (TextView) customView.findViewById(R.id.custom_text_view);
-                                    customText.setText(title == null ? "" : title);
-                                    customText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                                        TextView customText = (TextView) customView.findViewById(R.id.custom_text_view);
+                                        customText.setText(title == null ? "" : title);
+                                        customText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
-                                    Button leftButton = (Button) customView.findViewById(R.id.left_button);
-                                    Button rightButton = (Button) customView.findViewById(R.id.right_button);
+                                        Button leftButton = (Button) customView.findViewById(R.id.left_button);
+                                        Button rightButton = (Button) customView.findViewById(R.id.right_button);
 
-                                    final MaterialStyledDialog dialog = new MaterialStyledDialog.Builder(activity)
-                                            .setStyle(Style.HEADER_WITH_TITLE)
+                                        final MaterialStyledDialog dialog = new MaterialStyledDialog.Builder(activity)
+                                                .setStyle(Style.HEADER_WITH_TITLE)
 //                                        .setHeaderDrawable(d)
-                                            .setCustomView(customView, 20, 20, 20, 20)
-                                            .withDialogAnimation(true)
-                                            .setHeaderScaleType(ImageView.ScaleType.FIT_CENTER).build();
+                                                .setCustomView(customView, 20, 20, 20, 20)
+                                                .withDialogAnimation(true)
+                                                .setHeaderScaleType(ImageView.ScaleType.FIT_CENTER).build();
 
-                                    if (cover != null)
-                                        Picasso.with(activity).load(cover).into(dialog.getDialogHead());
+                                        if (cover != null) {
+                                            if (cover.length() > 0) {
+                                                Picasso.with(activity).load(cover).into(dialog.getDialogHead());
+                                            }
+                                        }
 
-                                    if (data.getResult().getData().getData().getNotification().getPayload().getButtons().size() < 2) {
-                                        rightButton.setVisibility(View.GONE);
-                                    } else {
+
                                         final CHNotificationResponse.CHNotificationPayloadButton left = data.getResult().getData().getData().getNotification().getPayload().getButtons().get(0);
                                         final CHNotificationResponse.CHNotificationPayloadButton right = data.getResult().getData().getData().getNotification().getPayload().getButtons().get(1);
-
-
                                         ColorStateList leftState = new ColorStateList(new int[][]{
                                                 new int[]{android.R.attr.state_enabled}, // enabled
                                         }, new int[]{
@@ -469,8 +469,16 @@ public class CHClient {
                                                 });
                                             }
                                         });
+
+                                        String templateType = data.getResult().getData().getData().getNotification().getPayload().getTemplateType();
+                                        if (templateType.equals("IMAGE_TEXT_ONE_BUTTON")) {
+                                            rightButton.setVisibility(View.GONE);
+                                        }
+                                        dialog.show();
+
+                                    } catch (Exception e) {
+                                        Log.d(CHConstants.kChannel_tag, e.getMessage());
                                     }
-                                    dialog.show();
                                 }
                             });
                             readThread.run();
