@@ -157,6 +157,7 @@ public class CHClient {
             deviceInfo.put("SystemAPILevel", android.os.Build.VERSION.SDK_INT + "");
             deviceInfo.put("SystemDeviceTypeFormatted", android.os.Build.DEVICE);
             deviceInfo.put("DeviceModel", android.os.Build.MODEL);
+            deviceInfo.put("ApplicationVersion", Channel.getPackageVersion());
             return deviceInfo;
         } catch (Exception e) {
             return new HashMap<String, String>();
@@ -546,6 +547,7 @@ public class CHClient {
             deviceInfo.put("systemVersion", Build.VERSION.RELEASE);
             deviceInfo.put("systemAPILevel", android.os.Build.VERSION.SDK_INT + "");
             deviceInfo.put("systemDeviceTypeFormatted", android.os.Build.DEVICE);
+            deviceInfo.put("applicationVersion", Channel.getPackageVersion());
             device.setInfo(deviceInfo);
 
 
