@@ -8,6 +8,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +34,7 @@ public class Channel {
 
     private static SharedPreferences sharedPreferences;
     private static String packageName;
+    private static String packageVersion;
 
     public static SharedPreferences getSharedPreferences() {
         return sharedPreferences;
@@ -53,13 +57,25 @@ public class Channel {
             Channel.packageName = packageName;
     }
 
+    public static String getPackageVersion() {
+        return packageVersion;
+    }
+
+    public static void setPackageVersion(String packageVersion) {
+        if (packageVersion != null)
+             Channel.packageVersion = packageVersion;
+    }
+
     public final static void setupApplicationContextWithApplicationKey(Context context, String applicationID, final ChannelCallback callback) {
         try {
             if (context == null) {
                 callback.onFail("Application Context not found");
                 return;
             }
+
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             setPackageName(context.getPackageName());
+            setPackageVersion(packageInfo.versionName+ "." + packageInfo.versionCode);
             setSharedPreferences(context.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE));
             setupApplicationAndClient(applicationID, null, null, callback);
         } catch (Exception e) {
@@ -74,7 +90,10 @@ public class Channel {
                 callback.onFail("Application Context not found");
                 return;
             }
+
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             setPackageName(context.getPackageName());
+            setPackageVersion(packageInfo.versionName+ "." + packageInfo.versionCode);
             setSharedPreferences(context.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE));
             setupApplicationAndClient(applicationID, userID, userData, callback);
         } catch (Exception e) {
@@ -162,6 +181,20 @@ public class Channel {
         }
     }
 
+    public final static void showLatestNotification(final Activity activity) {
+        showLatestNotification(activity, new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
+    }
+
     public final static void showLatestNotification(final Activity activity, final ChannelCallback callback) {
         try {
             if (CHClient.currentClient() == null) {
@@ -229,6 +262,20 @@ public class Channel {
         }
     }
 
+
+    public final static void subscribeToTopic(String topic) {
+        subscribeToTopic(topic, new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+
+            }
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
+    }
+
     public final static void subscribeToTopic(String topic, final ChannelCallback callback) {
         try {
             if (CHClient.currentClient() == null) {
@@ -261,6 +308,20 @@ public class Channel {
             callback.onFail(e.getMessage());
             return;
         }
+    }
+
+    public final static void unsubscribeFromTopic(String topic) {
+        unsubscribeFromTopic(topic, new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+
+            }
+
+            @Override
+            public void onFail(String message) {
+
+            }
+        });
     }
 
     public final static void unsubscribeFromTopic(String topic, final ChannelCallback callback) {

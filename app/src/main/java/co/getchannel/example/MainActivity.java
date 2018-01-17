@@ -27,7 +27,34 @@ public class MainActivity extends AppCompatActivity {
         final Activity thisActivity = this;
         setContentView(R.layout.activity_main);
 
-//        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
+        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
+            @Override
+            public void onSuccess() {
+                final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+                Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Example","setupApplicationContextWithApplicationKey success");
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+                        Log.d("Example","setupApplicationContextWithApplicationKey fail");
+                    }
+                });
+            }
+
+            @Override
+            public void onFail(String message) {
+                Log.d("Example","setupApplicationContextWithApplicationKey fail");
+            }
+        });
+
+//        String userID = "Tui_Test_SystemName4";
+//        HashMap<String,String> userData =  new HashMap<String,String>();
+//        userData.put("name","Tui");
+//        userData.put("lastname","Bombadua");
+//        Channel.setupApplicationContextWithApplicationKeyAndUser(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", userID, userData, new ChannelCallback() {
 //            @Override
 //            public void onSuccess() {
 //                final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
@@ -50,33 +77,6 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
-        String userID = "Tui_Test_SystemName4";
-        HashMap<String,String> userData =  new HashMap<String,String>();
-        userData.put("name","Tui");
-        userData.put("lastname","Bombadua");
-        Channel.setupApplicationContextWithApplicationKeyAndUser(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", userID, userData, new ChannelCallback() {
-            @Override
-            public void onSuccess() {
-                final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-                Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d("Example","notifyButton success");
-                    }
-
-                    @Override
-                    public void onFail(String message) {
-                        Log.d("Example","notifyButton fail");
-                    }
-                });
-            }
-
-            @Override
-            public void onFail(String message) {
-
-            }
-        });
-
 
         Button clickButton = (Button) findViewById(R.id.contactButton);
         clickButton.setOnClickListener( new View.OnClickListener() {
@@ -97,17 +97,18 @@ public class MainActivity extends AppCompatActivity {
         notifyButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.showLatestNotification(thisActivity, new ChannelCallback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d("Example","notifyButton success");
-                    }
-
-                    @Override
-                    public void onFail(String message) {
-                        Log.d("Example","notifyButton fail");
-                    }
-                });
+                Channel.showLatestNotification(thisActivity);
+//                Channel.showLatestNotification(thisActivity, new ChannelCallback() {
+//                    @Override
+//                    public void onSuccess() {
+//                        Log.d("Example","notifyButton success");
+//                    }
+//
+//                    @Override
+//                    public void onFail(String message) {
+//                        Log.d("Example","notifyButton fail");
+//                    }
+//                });
             }
         });
 
@@ -116,17 +117,18 @@ public class MainActivity extends AppCompatActivity {
         subscribeButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.subscribeToTopic("tui", new ChannelCallback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d("Example","subscribeButton success");
-                    }
-
-                    @Override
-                    public void onFail(String message) {
-                        Log.d("Example","subscribeButton fail");
-                    }
-                });
+                Channel.subscribeToTopic("tui");
+//                Channel.subscribeToTopic("tui", new ChannelCallback() {
+//                    @Override
+//                    public void onSuccess() {
+//                        Log.d("Example","subscribeButton success");
+//                    }
+//
+//                    @Override
+//                    public void onFail(String message) {
+//                        Log.d("Example","subscribeButton fail");
+//                    }
+//                });
             }
         });
 
@@ -135,17 +137,18 @@ public class MainActivity extends AppCompatActivity {
         unsubscribeButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.unsubscribeFromTopic("tui", new ChannelCallback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d("Example","unsubscribeButton success");
-                    }
-
-                    @Override
-                    public void onFail(String message) {
-                        Log.d("Example","unsubscribeButton fail");
-                    }
-                });
+                Channel.unsubscribeFromTopic("tui");
+//                Channel.unsubscribeFromTopic("tui", new ChannelCallback() {
+//                    @Override
+//                    public void onSuccess() {
+//                        Log.d("Example","unsubscribeButton success");
+//                    }
+//
+//                    @Override
+//                    public void onFail(String message) {
+//                        Log.d("Example","unsubscribeButton fail");
+//                    }
+//                });
             }
         });
     }
