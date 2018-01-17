@@ -59,8 +59,6 @@ public class Channel {
                 callback.onFail("Application Context not found");
                 return;
             }
-
-
             setPackageName(context.getPackageName());
             setSharedPreferences(context.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE));
             setupApplicationAndClient(applicationID, null, null, callback);
@@ -76,8 +74,6 @@ public class Channel {
                 callback.onFail("Application Context not found");
                 return;
             }
-
-
             setPackageName(context.getPackageName());
             setSharedPreferences(context.getSharedPreferences("Channel", android.content.Context.MODE_PRIVATE));
             setupApplicationAndClient(applicationID, userID, userData, callback);
@@ -129,8 +125,6 @@ public class Channel {
             if (CHConfiguration.getApplicationId().length() == 0) {
                 return;
             }
-
-
             Intent myIntent = new Intent(activity, ChatActivity.class);
             activity.startActivity(myIntent);
         } catch (Exception e) {
@@ -158,7 +152,6 @@ public class Channel {
             if (CHConfiguration.getApplicationId().length() == 0) {
                 return;
             }
-
 
             Intent myIntent = new Intent(activity, ChatActivity.class);
             myIntent.putExtra("userData", userData);
@@ -287,7 +280,7 @@ public class Channel {
             }
 
 
-            CHClient.currentClient().subscribeToTopic(topic, new ChannelProcessComplete() {
+            CHClient.currentClient().unsubscribeFromTopic(topic, new ChannelProcessComplete() {
                 @Override
                 public void onSuccess() {
                     callback.onSuccess();

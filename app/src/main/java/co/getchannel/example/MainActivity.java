@@ -34,12 +34,12 @@ public class MainActivity extends AppCompatActivity {
                 Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
                     @Override
                     public void onSuccess() {
-
+                        Log.d("Example","notifyButton success");
                     }
 
                     @Override
                     public void onFail(String message) {
-
+                        Log.d("Example","notifyButton fail");
                     }
                 });
             }
