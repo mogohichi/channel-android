@@ -37,6 +37,28 @@
                     android:text="notification" />
 
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent">
+
+                <Button
+                    android:id="@+id/subscribeButton"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_span="1"
+                    android:layout_weight="1"
+                    android:text="subscribe" />
+
+                <Button
+                    android:id="@+id/unsubscribeButton"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_span="1"
+                    android:layout_weight="1"
+                    android:text="unsubscribe" />
+
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 

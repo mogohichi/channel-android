@@ -12,6 +12,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import co.getchannel.channel.Channel;
 import co.getchannel.channel.callback.ChannelCallback;
+import co.getchannel.channel.models.CHClient;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
             @Override
             public void onSuccess() {
-                String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+                final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
                 Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
                     @Override
                     public void onSuccess() {
@@ -71,47 +72,60 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        Button btn = (Button) findViewById(R.id.notifyButton);
-        btn.setOnClickListener( new View.OnClickListener() {
+        Button notifyButton = (Button) findViewById(R.id.notifyButton);
+        notifyButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.subscribeToTopic("tui", new ChannelCallback() {
-                    @Override
-                    public void onSuccess() {
-
-                    }
-
-                    @Override
-                    public void onFail(String message) {
-
-                    }
-                });
-                Channel.unsubscribeFromTopic("tui", new ChannelCallback() {
-                    @Override
-                    public void onSuccess() {
-
-                    }
-
-                    @Override
-                    public void onFail(String message) {
-
-                    }
-                });
                 Channel.showLatestNotification(thisActivity, new ChannelCallback() {
                     @Override
                     public void onSuccess() {
-
+                        Log.d("Example","notifyButton success");
                     }
 
                     @Override
                     public void onFail(String message) {
-
+                        Log.d("Example","notifyButton fail");
                     }
                 });
             }
         });
 
 
+        Button subscribeButton = (Button) findViewById(R.id.subscribeButton);
+        subscribeButton.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Channel.subscribeToTopic("tui", new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Example","subscribeButton success");
+                    }
 
+                    @Override
+                    public void onFail(String message) {
+                        Log.d("Example","subscribeButton fail");
+                    }
+                });
+            }
+        });
+
+
+        Button unsubscribeButton = (Button) findViewById(R.id.unsubscribeButton);
+        unsubscribeButton.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Channel.unsubscribeFromTopic("tui", new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Example","unsubscribeButton success");
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+                        Log.d("Example","unsubscribeButton fail");
+                    }
+                });
+            }
+        });
     }
 }
