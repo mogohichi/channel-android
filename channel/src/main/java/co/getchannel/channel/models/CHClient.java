@@ -638,9 +638,7 @@ public class CHClient {
     public static void unsubscribeFromTopic(String topic, final ChannelProcessComplete callback) {
         try {
             CHAPIInterface apiService = CHAPI.getAPIWithApplication().create(CHAPIInterface.class);
-            Topic unsubscribeTopic = new Topic();
-            unsubscribeTopic.setTopic(topic);
-            Call<CHEmptyResponse> call = apiService.unsubscribeFromTopic(unsubscribeTopic);
+            Call<CHEmptyResponse> call = apiService.unsubscribeFromTopic(topic);
             call.enqueue(new Callback<CHEmptyResponse>() {
                 @Override
                 public void onResponse(Call<CHEmptyResponse> call, Response<CHEmptyResponse> response) {

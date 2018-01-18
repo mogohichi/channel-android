@@ -1,12 +1,14 @@
 package co.getchannel.example;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -25,28 +27,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final Activity thisActivity = this;
+        final Context context = this.getApplicationContext();
+        final String appKey = "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw";
         setContentView(R.layout.activity_main);
 
-        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), "app_8mMKW3tfvTd3QLdKWznFS63r1qHj-nd6Z6nmb7ySBWw", new ChannelCallback() {
+        Channel.setupApplicationContextWithApplicationKey(this.getApplicationContext(), appKey, new ChannelCallback() {
             @Override
             public void onSuccess() {
                 final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
                 Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
                     @Override
                     public void onSuccess() {
-                        Log.d("Example","setupApplicationContextWithApplicationKey success");
+                        Toast.makeText(thisActivity, appKey, Toast.LENGTH_LONG).show();
                     }
 
                     @Override
                     public void onFail(String message) {
-                        Log.d("Example","setupApplicationContextWithApplicationKey fail");
+                        Toast.makeText(thisActivity, message, Toast.LENGTH_LONG).show();
                     }
                 });
             }
 
             @Override
             public void onFail(String message) {
-                Log.d("Example","setupApplicationContextWithApplicationKey fail");
+                Toast.makeText(thisActivity, message, Toast.LENGTH_LONG).show();
             }
         });
 
@@ -78,8 +82,39 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
 
-        Button clickButton = (Button) findViewById(R.id.contactButton);
-        clickButton.setOnClickListener( new View.OnClickListener() {
+
+        Button setupButton = (Button) findViewById(R.id.setupButton);
+        setupButton.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Channel.setupApplicationContextWithApplicationKey(context, appKey, new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+                        final String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+                        Channel.saveDeviceToken(refreshedToken, new ChannelCallback() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(thisActivity, appKey, Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onFail(String message) {
+                                Toast.makeText(thisActivity, message, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+                        Toast.makeText(thisActivity, message, Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            }
+        });
+
+        Button contactButton = (Button) findViewById(R.id.contactButton);
+        contactButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
@@ -97,18 +132,18 @@ public class MainActivity extends AppCompatActivity {
         notifyButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.showLatestNotification(thisActivity);
-//                Channel.showLatestNotification(thisActivity, new ChannelCallback() {
-//                    @Override
-//                    public void onSuccess() {
-//                        Log.d("Example","notifyButton success");
-//                    }
-//
-//                    @Override
-//                    public void onFail(String message) {
-//                        Log.d("Example","notifyButton fail");
-//                    }
-//                });
+//                Channel.showLatestNotification(thisActivity);
+                Channel.showLatestNotification(thisActivity, new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Example","notifyButton success");
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+                       Toast.makeText(thisActivity, message, Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
 
@@ -117,18 +152,18 @@ public class MainActivity extends AppCompatActivity {
         subscribeButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.subscribeToTopic("tui");
-//                Channel.subscribeToTopic("tui", new ChannelCallback() {
-//                    @Override
-//                    public void onSuccess() {
-//                        Log.d("Example","subscribeButton success");
-//                    }
-//
-//                    @Override
-//                    public void onFail(String message) {
-//                        Log.d("Example","subscribeButton fail");
-//                    }
-//                });
+//                Channel.subscribeToTopic("tui");
+                Channel.subscribeToTopic("tui", new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Example","subscribeButton success");
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+                        Toast.makeText(thisActivity, message, Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
 
@@ -137,18 +172,18 @@ public class MainActivity extends AppCompatActivity {
         unsubscribeButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Channel.unsubscribeFromTopic("tui");
-//                Channel.unsubscribeFromTopic("tui", new ChannelCallback() {
-//                    @Override
-//                    public void onSuccess() {
-//                        Log.d("Example","unsubscribeButton success");
-//                    }
-//
-//                    @Override
-//                    public void onFail(String message) {
-//                        Log.d("Example","unsubscribeButton fail");
-//                    }
-//                });
+//                 Channel.unsubscribeFromTopic("tui");
+                Channel.unsubscribeFromTopic("tui", new ChannelCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Example","unsubscribeButton success");
+                    }
+
+                    @Override
+                    public void onFail(String message) {
+                        Toast.makeText(thisActivity, message, Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
     }

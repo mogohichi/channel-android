@@ -18,7 +18,6 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
-import retrofit2.http.HTTP;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -67,7 +66,7 @@ public interface CHAPIInterface {
     @POST("client/topics")
     Call<CHEmptyResponse> subscribeToTopic(@Body Topic topic);
 
-    @HTTP(method = "DELETE", path = "client/topics", hasBody = true)
-    Call<CHEmptyResponse> unsubscribeFromTopic(@Body Topic topic);
+    @DELETE("client/topics/{topic}")
+    Call<CHEmptyResponse> unsubscribeFromTopic(@Path("topic") String topic);
 
 }
