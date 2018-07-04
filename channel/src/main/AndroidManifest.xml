@@ -20,7 +20,7 @@
         <activity android:name=".activities.ChatActivity"></activity>
 
         <provider
-            android:name=".GenericFileProvider"
+            android:name="co.getchannel.channel.GenericFileProvider"
             android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
