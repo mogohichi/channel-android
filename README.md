@@ -25,15 +25,15 @@ allprojects {
 
 #### 4. Add code below to your module build.gradle
  ```gradle
-    compile (name: 'channel', ext:'aar')
-    compile 'com.github.jkwiecien:EasyImage:1.3.1'
-    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
-    compile "com.google.android:flexbox:0.2.5"
-    compile "com.android.support:appcompat-v7:26.0.0-alpha1"
-    compile "com.android.support:cardview-v7:26.0.0-alpha1"
-    compile "com.android.support:design:26.0.0-alpha1"
-    compile "com.github.siyamed:android-shape-imageview:0.9.3"
-    compile "me.relex:circleindicator:1.2.2@aar"
+    implementation (name: 'channel', ext:'aar')
+    implementation 'com.github.jkwiecien:EasyImage:1.3.1'
+    implementation 'com.afollestad.material-dialogs:core:0.9.0.2'
+    implementation "com.google.android:flexbox:0.2.5"
+    implementation "com.android.support:appcompat-v7:26.0.0-alpha1"
+    implementation "com.android.support:cardview-v7:26.0.0-alpha1"
+    implementation "com.android.support:design:26.0.0-alpha1"
+    implementation "com.github.siyamed:android-shape-imageview:0.9.3"
+    implementation "me.relex:circleindicator:1.2.2@aar"
 ```
 
 #### 5. Setup Channel application key in your main activity
