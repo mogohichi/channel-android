@@ -17,7 +17,7 @@ import java.util.Map;
 import co.getchannel.channel.activities.ChatActivity;
 import co.getchannel.channel.callback.ChannelCallback;
 import co.getchannel.channel.models.CHClient;
-import co.getchannel.channel.callback.ChannelProcessComplete;
+import co.getchannel.channel.callback.ChannelCallback;
 
 
 public class Channel {
@@ -107,17 +107,7 @@ public class Channel {
             CHConfiguration.setApplicationId(applicationId);
             CHClient.currentClient().setUserID(userID);
             CHClient.currentClient().setUserData(userData);
-            CHClient.connectClientWithUserID(userID, userData, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
+            CHClient.connectClientWithUserID(userID, userData, callback);
         } catch (Exception e) {
             callback.onFail(e.getMessage());
             return;
@@ -212,17 +202,7 @@ public class Channel {
             }
 
 
-            CHClient.currentClient().checkNewNotification(activity, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
+            CHClient.currentClient().checkNewNotification(activity, callback);
         } catch (Exception e) {
             callback.onFail(e.getMessage());
         }
@@ -245,17 +225,7 @@ public class Channel {
             }
 
 
-            CHClient.currentClient().saveDeviceToken(token, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
+            CHClient.currentClient().saveDeviceToken(token,callback);
 
         } catch (Exception e) {
             callback.onFail(e.getMessage());
@@ -293,17 +263,7 @@ public class Channel {
             }
 
 
-            CHClient.currentClient().subscribeToTopic(topic, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
+            CHClient.currentClient().subscribeToTopic(topic, callback);
         } catch (Exception e) {
             callback.onFail(e.getMessage());
             return;
@@ -341,17 +301,7 @@ public class Channel {
             }
 
 
-            CHClient.currentClient().unsubscribeFromTopic(topic, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
+            CHClient.currentClient().unsubscribeFromTopic(topic, callback);
         } catch (Exception e) {
             callback.onFail(e.getMessage());
             return;
@@ -376,17 +326,7 @@ public class Channel {
             }
 
 
-            CHClient.currentClient().postbackPushNotification(data, new ChannelProcessComplete() {
-                @Override
-                public void onSuccess() {
-                    callback.onSuccess();
-                }
-
-                @Override
-                public void onFail(String message) {
-                    callback.onFail(message);
-                }
-            });
+            CHClient.currentClient().postbackPushNotification(data, callback);
 
         } catch (Exception e) {
             callback.onFail(e.getMessage());

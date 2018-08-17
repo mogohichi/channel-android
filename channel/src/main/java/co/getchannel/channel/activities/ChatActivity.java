@@ -47,7 +47,7 @@ import co.getchannel.channel.callback.ThreadFetchComplete;
 import co.getchannel.channel.R;
 import co.getchannel.channel.helpers.CHConstants;
 import co.getchannel.channel.models.CHClient;
-import co.getchannel.channel.callback.ChannelProcessComplete;
+import co.getchannel.channel.callback.ChannelCallback;
 import co.getchannel.channel.models.ui.Message;
 import co.getchannel.channel.models.ui.User;
 import co.getchannel.channel.responses.CHMessageResponse;
@@ -131,7 +131,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
         msg.setText(inputMessage);
 
-        CHClient.currentClient().sendMessage(activity, msg, new ChannelProcessComplete() {
+        CHClient.currentClient().sendMessage(activity, msg, new ChannelCallback() {
             @Override
             public void onSuccess() {
                 User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
@@ -294,7 +294,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                             co.getchannel.channel.models.internal.Message msg = new co.getchannel.channel.models.internal.Message();
                             msg.setText(button.getTitle());
                             msg.setPostback(button.getPayload() == null ? "" :button.getPayload());
-                            CHClient.currentClient().sendMessage(activity, msg, new ChannelProcessComplete() {
+                            CHClient.currentClient().sendMessage(activity, msg, new ChannelCallback() {
                                 @Override
                                 public void onSuccess() {
                                     User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
@@ -337,7 +337,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         final String imageData = data.getResult().getData().getUrl();
         co.getchannel.channel.models.internal.Message message = new co.getchannel.channel.models.internal.Message();
         message.setImageData(imageData);
-        CHClient.currentClient().sendImage(activity, message, new ChannelProcessComplete() {
+        CHClient.currentClient().sendImage(activity, message, new ChannelCallback() {
             @Override
             public void onSuccess() {
                 User u = new User(CHClient.currentClient().getClientID(),"me","imageProfile",false);
@@ -436,7 +436,7 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                 final Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
                 if(bitmap != null) {
-                    CHClient.currentClient().uploadMessageImage(activity, toBase64(bitmap), new ChannelProcessComplete() {
+                    CHClient.currentClient().uploadMessageImage(activity, toBase64(bitmap), new ChannelCallback() {
                         @Override
                         public void onSuccess() {
 
@@ -488,10 +488,10 @@ public class ChatActivity extends AppCompatActivity implements ThreadFetchComple
         if (intent != null) {
             HashMap<String, String> userData = (HashMap<String, String>)intent.getSerializableExtra("userData");
             String userID = (String)intent.getSerializableExtra("userID");
-            CHClient.updateClientData(userID, userData, new ChannelProcessComplete() {
+            CHClient.updateClientData(userID, userData, new ChannelCallback() {
                 @Override
                 public void onSuccess() {
-                    CHClient.activeThread(activity, new ChannelProcessComplete() {
+                    CHClient.activeThread(activity, new ChannelCallback() {
                         @Override
                         public void onSuccess() {
                             initAdapter();
